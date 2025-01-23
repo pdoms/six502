@@ -1,168 +1,10 @@
-use core::fmt;
-use std::{ops::Index};
+use crate::{flags::{FlagIndex, Flags}, 
+    internal::{Instructions}, 
+    mem::Mem,
+};
 
-use crate::{bitset, clearbit, instructions::{Instruction, Instructions}, setbit};
-
-const MEM_CAP: usize = 1024*64;
 pub type Byte = u8;
 pub type Word = u16;
-
-
-
-#[derive(Clone, Copy)]
-#[repr(u8)]
-pub(crate) enum FlagIndex {
-    C, //Carry
-    Z, //Zero
-    I, //Interrut
-    D, //Decimal
-    B, //Break -> no cpu effect
-    One, // no cpu effect, always pushed as 1
-    O, //Overflow
-    N, //Negative Flag
-}
-
-
-impl From<u8> for FlagIndex {
-    fn from(value: u8) -> Self {
-        match value {
-            0 => FlagIndex::C,
-            1 => FlagIndex::Z,
-            2 => FlagIndex::I,
-            3 => FlagIndex::D,
-            4 => FlagIndex::B,
-            5 => FlagIndex::One,
-            6 => FlagIndex::O,
-            7 => FlagIndex::N,
-            _ => panic!("u8 out of FlagIndex Range")
-        }
-    }
-}
-
-impl Into<u8> for FlagIndex {
-    fn into(self) -> u8 {
-        self as u8
-    }
-}
-
-impl std::fmt::Debug for FlagIndex {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::C => write!(f, "C (0)"),
-            Self::Z => write!(f, "Z (1)"),
-            Self::I => write!(f, "I (2)"),
-            Self::D => write!(f, "D (3)"),
-            Self::B => write!(f, "B (4)"),
-            Self::One => write!(f, "One (5)"),
-            Self::O => write!(f, "O (6)"),
-            Self::N => write!(f, "N (7)"),
-        }
-    }
-}
-
-#[derive(PartialEq)]
-pub(crate) struct Flags {
-    inner: Byte
-}
-
-impl fmt::Debug for Flags {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let data = &mut [0u8; 8];
-        for i in 0..8 {
-            if bitset!(self.inner, i) != 0 {
-                data[i] = 1;
-            }
-        };
-        data.reverse();
-        write!(f, "{data:?} ({:#04x}|{})", self.inner, self.inner)
-    }
-}
-
-impl Flags {
-    fn new() -> Self {
-        let inner = setbit!(0, FlagIndex::One);
-        Self {inner}
-    }
-
-    #[cfg(test)]
-    pub(crate) fn fix_state(set_bits: &[FlagIndex]) -> Self {
-        let mut s = Self::new();
-        for idx in set_bits.into_iter() {
-            s.inner = setbit!(s.inner, *idx);
-        }
-        s
-    }
-
-    fn reset(&mut self) {
-        self.inner = 0;
-    }
-
-    /// Sets Zero Flag if provided value = 0
-    fn set_zero(&mut self, v: u8) {
-        if v == 0 {
-            self.inner = setbit!(self.inner, FlagIndex::Z)
-        } else {
-            self.inner = clearbit!(self.inner, FlagIndex::Z)
-        }  
-    }
-    fn zero(&self) -> bool {
-        bitset!(self.inner, FlagIndex::Z) != 0
-    }
-    /// Sets Zero Flag if bit at index 7 of provided v is set
-    fn set_neg(&mut self, v: u8) {
-        if bitset!(v, 7) != 0 {
-            self.inner = setbit!(self.inner, FlagIndex::N)
-        } else {
-            self.inner = clearbit!(self.inner, FlagIndex::N)
-        }  
-    }
-    fn neg(&self) -> bool {
-        bitset!(self.inner, FlagIndex::N) != 0
-    }
-}
-
-struct Mem {
-    inner: [u8; MEM_CAP]
-}
-
-impl Mem {
-    fn init() -> Self {
-        Self {inner: [0; MEM_CAP]}
-    }
-
-    fn clear(&mut self) {
-        //apparently this gets turned into memset call:
-        //https://rust.godbolt.org/
-        self.inner.iter_mut().for_each(|m| *m = 0);
-    }
-
-    pub fn load(&mut self, at: isize, data: &[u8]) {
-        if MEM_CAP < (at as usize) + data.len() {
-            panic!("Provided data is too big for cpu memory: {}kb", MEM_CAP/1024);
-        } 
-        unsafe {
-            let ptr = self.inner.as_mut_ptr().offset(at);
-            ptr.copy_from(data.as_ptr(), data.len());
-        }
-    }
-}
-
-impl Index<u8> for Mem {
-    type Output=Byte;
-
-    fn index(&self, index: u8) -> &Self::Output {
-        &self.inner[index as usize]
-    }
-}
-
-impl Index<u16> for Mem {
-    type Output=Byte;
-
-    fn index(&self, index: u16) -> &Self::Output {
-        &self.inner[index as usize]
-    }
-}
-
 
 pub struct Six502 {
     pc: Word,
@@ -243,14 +85,14 @@ impl Six502 {
     ///Decreasing its count by one;
     ///Finally, it returns a reference to the instruction 
     ///for evaluation and execution;
-    fn op_code(&mut self) -> &Instruction {
-        let opcode = self.mem[self.pc];
-        self.pc += 1;
-        let instruction = &self.instructions[opcode];
-        self.cycles = instruction.cycles as i64;
-        self.cycles -= 1;
-        return instruction
-    }
+   // fn op_code(&mut self) -> &InstrCode {
+   //     let opcode = self.mem[self.pc];
+   //     self.pc += 1;
+   //     let instruction = &self.instructions[opcode];
+   //     self.cycles = instruction.cycles as i64;
+   //     self.cycles -= 1;
+   //     return instruction
+   // }
 
     pub fn execute(&mut self) -> bool {
         let opcode = self.mem[self.pc];
@@ -320,33 +162,3 @@ impl std::fmt::Debug for Six502 {
 
 
 
-#[cfg(test)]
-mod test {
-    use super::Flags;
-
-    #[test]
-    fn set_z_flag() {
-        let mut flag = Flags::new();
-        flag.set_zero(0);
-        assert!(flag.zero());
-    }
-    #[test]
-    fn not_set_z_flag() {
-        let mut flag = Flags::new();
-        flag.set_zero(1);
-        assert!(!flag.zero());
-    }
-
-    #[test]
-    fn set_n_flag() {
-        let mut flag = Flags::new();
-        flag.set_neg(0xF3);
-        assert!(flag.neg());
-    }
-    #[test]
-    fn not_set_n_flag() {
-        let mut flag = Flags::new();
-        flag.set_neg(1);
-        assert!(!flag.neg());
-    }
-}
