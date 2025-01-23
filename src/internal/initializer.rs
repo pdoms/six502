@@ -7,7 +7,7 @@ pub fn row_0() -> [InstrCode; TABLE_COLS] {
     [
         instr!(0,0, "XXX", am::IMM, 1, nop), 
         instr!(0,1, "XXX", am::IMM, 1, nop),
-        instr!(0,2, "XXX", am::IMM, 1, nop),
+        instr!(0,2, "XXX", am::IMM, 1, nop), //this is the current HALT op
         instr!(0,3, "XXX", am::IMM, 1, nop),
         instr!(0,4, "XXX", am::IMM, 1, nop),
         instr!(0,5, "XXX", am::IMM, 1, nop),
@@ -231,7 +231,7 @@ pub fn row_10() -> [InstrCode; TABLE_COLS] {
         instr!(10,2, "XXX", am::IMM, 1, nop),
         instr!(10,3, "XXX", am::IMM, 1, nop),
         instr!(10,4, "XXX", am::IMM, 1, nop),
-        instr!(10,5, "XXX", am::IMM, 1, nop),
+        instr!(10,5, "LDA", am::ZP0, 3, lda_zp0),
         instr!(10,6, "XXX", am::IMM, 1, nop),
         instr!(10,7, "XXX", am::IMM, 1, nop),
         instr!(10,8, "XXX", am::IMM, 1, nop),

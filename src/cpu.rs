@@ -1,5 +1,5 @@
 use crate::{flags::{FlagIndex, Flags}, 
-    internal::{Instructions}, 
+    internal::{instruction, Instructions}, 
     mem::Mem,
 };
 
@@ -93,16 +93,18 @@ impl Six502 {
    //     self.cycles -= 1;
    //     return instruction
    // }
+   //
+    pub fn execute(&mut self) {
+        while self.instruction() {}
+    }
 
-    pub fn execute(&mut self) -> bool {
+    pub fn instruction(&mut self) -> bool {
         let opcode = self.mem[self.pc];
         self.pc += 1;
         let instr = &self.instructions[opcode];
         self.cycles = instr.cycles as i64;
         self.cycles -= 1;
-        //TODO WHAT if illegal instruction?
-        (instr.exec_fn)(self);
-        return false;
+        return (instr.exec_fn)(self)
     }
 
     /// Returns byte at pc and increases pc
