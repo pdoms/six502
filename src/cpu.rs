@@ -1,10 +1,16 @@
-use crate::{flags::{FlagIndex, Flags}, 
-    internal::{instruction, Instructions}, 
-    mem::Mem,
+use crate::{flags::{FlagIndex, Flags}, internal::{instruction, Instructions, opcodes::OpCode}, log::Log, mem::Mem
 };
 
 pub type Byte = u8;
 pub type Word = u16;
+
+#[cfg(test)]
+pub enum Register {
+    A,
+    X,
+    Y,
+    SP
+}
 
 pub struct Six502 {
     pc: Word,
@@ -16,7 +22,8 @@ pub struct Six502 {
     mem: Mem,
     //this will hold the current state of cycles
     cycles: i64,
-    instructions: Instructions
+    instructions: Instructions,
+    log: Log
 }
 
 impl Six502 {
@@ -30,15 +37,18 @@ impl Six502 {
             flags: Flags::new(),
             mem: Mem::init(),
             cycles: 0,
-            instructions: Instructions::init()
+            instructions: Instructions::init(),
+            log: Log::init()
         }
     }
 
     pub fn load_to_pc(&mut self, data: &[u8]) {
+        self.log.info(format!("Loading data to mem[{:#04x}]", self.pc).as_str());
         self.mem.load(self.pc as isize, data);
     }
 
     pub fn reset(&mut self) {
+        self.log.info(format!("Running Reset Sequence").as_str());
         //for now:
         //    PC to 0xFFFC
         self.pc = 0xFFFC;
@@ -55,8 +65,20 @@ impl Six502 {
         self.cycles = 0;
     }
 
+    ///the decreases the cycle counter
+    pub (crate) fn clock(&mut self) {
+        self.cycles -= 1;
+    }
+
     pub (crate) fn cycles_at(&self, c: i64) -> bool {
         self.cycles == c
+    }
+    pub(crate) fn cycles(&self) -> i64 {
+        self.cycles
+    }
+
+    pub (crate) fn set_cycle(&mut self, c: i64) {
+        self.cycles = c;
     }
 
     pub(crate) fn set_flag_value(&mut self, flag: FlagIndex, value: Byte) {
@@ -71,35 +93,39 @@ impl Six502 {
     
     #[inline]
     pub(crate) fn set_a(&mut self, b: Byte) {
+        self.log.info(format!("Setting register: A to {b:#02x}").as_str());
         self.a = b;
-        self.cycles -= 1;
+    }
+
+    #[inline]
+    pub(crate) fn load_a(&mut self, addr: Word) {
+        self.log.info(format!("Loading from {addr:#02x} into register: A").as_str());
+        self.a = self.read_byte(addr);
     }
 
     #[inline]
     pub(crate) fn a(&mut self) -> Byte {
         self.a
     }
+
+    #[inline]
+    pub(crate) fn x(&mut self) -> Byte {
+        self.x
+    }
+
+    #[inline]
+    pub(crate) fn y(&mut self) -> Byte {
+        self.y
+    }
     
-    ///This reads one byte, at PC and then increases the PC; 
-    ///Then sets the `self.cycles` to instruction.cycles
-    ///Decreasing its count by one;
-    ///Finally, it returns a reference to the instruction 
-    ///for evaluation and execution;
-   // fn op_code(&mut self) -> &InstrCode {
-   //     let opcode = self.mem[self.pc];
-   //     self.pc += 1;
-   //     let instruction = &self.instructions[opcode];
-   //     self.cycles = instruction.cycles as i64;
-   //     self.cycles -= 1;
-   //     return instruction
-   // }
-   //
     pub fn execute(&mut self) {
         while self.instruction() {}
     }
 
     pub fn instruction(&mut self) -> bool {
         let opcode = self.mem[self.pc];
+        self.log.info(format!("Read instruciton '{:?}' from mem[{:#02x}]", OpCode::from(opcode), self.pc).as_str());
+
         self.pc += 1;
         let instr = &self.instructions[opcode];
         self.cycles = instr.cycles as i64;
@@ -110,8 +136,55 @@ impl Six502 {
     /// Returns byte at pc and increases pc
     pub(crate) fn fetch_byte(&mut self) -> Byte {
         let b = self.mem[self.pc];
-        self.pc += 1;
+        self.log.info(format!("Fetched byte {b:#02x} from mem[{:#02x}]", self.pc).as_str());
+        self.pc +=1;
+        self.clock();
         return b;
+    }
+    //reads one byte at specified addr.
+    pub(crate) fn read_byte(&mut self, addr: Word) -> Byte {
+ 
+        let b = self.mem[addr];
+        self.log.info(format!("Read byte {b:#02x} from mem[{addr:#02x}]").as_str());
+        self.clock();
+        return b;
+    }
+
+    //reads two bytes at PC, increases PC (2x)
+    pub(crate) fn fetch_word(&mut self) -> Word {
+        let mut word: Word = self.mem[self.pc] as Word;
+        self.pc+=1;
+        self.clock();
+        word |= (self.mem[self.pc] as Word) << 8;
+        self.pc+=1;
+        self.clock();
+        word
+    }
+
+    #[cfg(test)]
+    pub(crate) fn mem_section(&self, start: usize, len: usize) {
+        let mut mem = vec![0u8; len];
+        self.mem.get_mem_section(start, &mut mem);
+        println!("mem at: {start}, {mem:?}");
+    }
+
+    #[cfg(test)]
+    pub (crate) fn set_byte_at(&mut self, addr: Word, b: Byte) {
+        self.mem[addr] = b;
+    }
+    #[cfg(test)]
+    pub(crate) fn set_reg_byte(&mut self, reg: Register, v: Byte) {
+        match reg {
+            Register::A => self.a = v,
+            Register::X => self.x = v,
+            Register::Y => self.y = v,
+            Register::SP => self.sp = v,
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn set_pc(&mut self, pc: Word) {
+        self.pc = pc;
     }
 
     #[cfg(test)]
@@ -147,7 +220,6 @@ impl Six502 {
         }
     }
 }
-
 impl std::fmt::Debug for Six502 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             f.write_str(">>\n")?;

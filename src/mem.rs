@@ -1,6 +1,6 @@
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
-use crate::cpu::Byte;
+use crate::cpu::{Byte, Word};
 
 
 pub const MEM_CAP: usize = 1024*64;
@@ -29,6 +29,10 @@ impl Mem {
             ptr.copy_from(data.as_ptr(), data.len());
         }
     }
+    #[cfg(test)]
+    pub fn get_mem_section(&self, start: usize, buf: &mut [Byte]) {
+        buf.copy_from_slice(&self.inner[start..buf.len()]);
+    }
 }
 
 impl Index<u8> for Mem {
@@ -44,5 +48,17 @@ impl Index<u16> for Mem {
 
     fn index(&self, index: u16) -> &Self::Output {
         &self.inner[index as usize]
+    }
+}
+
+impl IndexMut<u8> for Mem {
+    fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+        &mut self.inner[index as usize]
+    }
+}
+
+impl IndexMut<u16> for Mem {
+    fn index_mut(&mut self, index: u16) -> &mut Self::Output {
+        &mut self.inner[index as usize]
     }
 }

@@ -3,7 +3,7 @@ mod executors;
 pub mod instruction;
 mod modes;
 mod initializer;
-mod opcodes;
+pub mod opcodes;
 #[cfg(test)]
 mod test;
 
