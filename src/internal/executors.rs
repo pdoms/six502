@@ -85,7 +85,7 @@ pub fn lda_aby(cpu: &mut Six502) -> bool {
     cpu.clock();
     cpu.load_a(abs_addr_y);
     lda_set_flags(cpu);
-    let cross =(abs_addr ^ abs_addr_y) >> 8 > 0;
+    let cross = ((abs_addr ^ abs_addr_y) >> 8) > 0;
     if cross {
         cpu.clock();
     } else {
@@ -98,5 +98,33 @@ pub fn lda_aby(cpu: &mut Six502) -> bool {
     return true;
 }
 
+pub fn lda_izx(cpu: &mut Six502) -> bool {
+    let addr = cpu.fetch_byte().wrapping_add(cpu.x());
+    cpu.clock();
+    let effective_addr = cpu.read_word(addr as Word);
+    cpu.load_a(effective_addr);
+    lda_set_flags(cpu);
+    assert!(cpu.cycles_at(0));
+    return true;
 
+}
+pub fn lda_izy(cpu: &mut Six502) -> bool {
+    let addr = cpu.fetch_byte();
+    let effective_addr = cpu.read_word(addr as Word);
+    let effective_addr_y = effective_addr.wrapping_add(cpu.y() as Word);
+    cpu.clock();
+    cpu.load_a(effective_addr_y);
+    lda_set_flags(cpu);
+    let cross = ((effective_addr ^ effective_addr_y) >> 8) > 0;
+    if cross {
+        cpu.clock();
+    } else {
+        if cpu.cycles_at(1) {
+            cpu.set_cycle(0);
+        }
+    }
+    let cycles = cpu.cycles();
+    assert!(cpu.cycles_at(0), "recieved: {cycles}");
+    return true;
+}
 

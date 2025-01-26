@@ -23,7 +23,8 @@ pub struct Six502 {
     //this will hold the current state of cycles
     cycles: i64,
     instructions: Instructions,
-    log: Log
+    log: Log,
+
 }
 
 impl Six502 {
@@ -38,7 +39,7 @@ impl Six502 {
             mem: Mem::init(),
             cycles: 0,
             instructions: Instructions::init(),
-            log: Log::init()
+            log: Log::init(),
         }
     }
 
@@ -160,6 +161,15 @@ impl Six502 {
         self.clock();
         word
     }
+
+    pub(crate) fn read_word(&mut self, addr: Word) -> Word {
+        let lo = self.read_byte(addr) as Word;
+        let hi = self.read_byte(addr+1) as Word;
+        return lo | (hi << 8);
+    }
+
+
+
 
     #[cfg(test)]
     pub(crate) fn mem_section(&self, start: usize, len: usize) {

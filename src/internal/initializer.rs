@@ -227,7 +227,7 @@ pub fn row_9() -> [InstrCode; TABLE_COLS] {
 pub fn row_10() -> [InstrCode; TABLE_COLS] {
     [
         instr!(10,0, "XXX", am::IMM, 1, nop), 
-        instr!(10,1, "XXX", am::IMM, 1, nop), 
+        instr!(10,1, "LDA", am::IZX, 6, lda_izx), 
         instr!(10,2, "XXX", am::IMM, 1, nop),
         instr!(10,3, "XXX", am::IMM, 1, nop),
         instr!(10,4, "XXX", am::IMM, 1, nop),
@@ -249,7 +249,7 @@ pub fn row_10() -> [InstrCode; TABLE_COLS] {
 pub fn row_11() -> [InstrCode; TABLE_COLS] {
     [
         instr!(11,0, "XXX", am::IMM, 1, nop), 
-        instr!(11,1, "XXX", am::IMM, 1, nop), 
+        instr!(11,1, "LDA", am::IZY, 6, lda_izy), 
         instr!(11,2, "XXX", am::IMM, 1, nop),
         instr!(11,3, "XXX", am::IMM, 1, nop),
         instr!(11,4, "XXX", am::IMM, 1, nop),

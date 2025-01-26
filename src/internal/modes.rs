@@ -13,8 +13,8 @@ pub enum AddressingMode {
     ABS,
     ABX,
     ABY,
-    IND,
-    IZX,
-    IZY
+    IND, // Indirect
+    IZX, // aka Indexed Indirect
+    IZY  // aka Indirect Indexed
 }
 

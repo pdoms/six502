@@ -133,6 +133,50 @@ fn aby() {
 }
 
 #[test]
+fn izx() {
+    let bytes_per_instr = 2;
+    let mem = &[OpCode::LdaIzx as u8, 0x40, OpCode::Nop as u8];
+    let mut cpu = Six502::new();
+    cpu.set_pc(0xFFF);
+    cpu.load_to_pc(mem);
+    cpu.set_reg_byte(Register::X, 0x04);
+    cpu.set_byte_at(0x44, 0x01);
+    cpu.set_byte_at(0x45, 0x02);
+    cpu.set_byte_at(0x0201, 0x22);
+    cpu.execute();
+    let pc = 0xFFF+bytes_per_instr+1;
+    let sp = 0;
+    let a = 34;
+    let x = 0x04;
+    let y = 0;
+    let cycles = 0;
+    let flags = Flags::fix_state(&[]);
+    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+}
+
+#[test]
+fn izy() {
+    let bytes_per_instr = 2;
+    let mem = &[OpCode::LdaIzy as u8, 0x40, OpCode::Nop as u8];
+    let mut cpu = Six502::new();
+    cpu.set_pc(0xFFF);
+    cpu.load_to_pc(mem);
+    cpu.set_reg_byte(Register::Y, 0x04);
+    cpu.set_byte_at(0x40, 0x01);
+    cpu.set_byte_at(0x41, 0x02);
+    cpu.set_byte_at(0x0205, 0x22);
+    cpu.execute();
+    let pc = 0xFFF+bytes_per_instr+1;
+    let sp = 0;
+    let a = 34;
+    let x = 0;
+    let y = 0x04;
+    let cycles = 0;
+    let flags = Flags::fix_state(&[]);
+    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+}
+
+#[test]
 fn instr_correct_spots() {
     let instructions = Instructions::init();
     assert_eq!(instructions[0xA5].mnemonic, "LDA");
