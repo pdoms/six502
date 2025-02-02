@@ -1,4 +1,4 @@
-mod executors;
+mod ops;
 #[macro_use]
 pub mod instruction;
 mod modes;

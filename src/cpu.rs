@@ -1,4 +1,4 @@
-use crate::{flags::{FlagIndex, Flags}, internal::{instruction, Instructions, opcodes::OpCode}, log::Log, mem::Mem
+use crate::{flags::{FlagIndex, Flags}, internal::{Instructions, opcodes::OpCode}, log::Log, mem::Mem
 };
 
 pub type Byte = u8;
@@ -86,10 +86,18 @@ impl Six502 {
         match flag {
             FlagIndex::Z => self.flags.set_zero(value),
             FlagIndex::N => self.flags.set_neg(value),
+            FlagIndex::C => self.flags.set_carry(value),
+            FlagIndex::O => self.flags.set_overflow(value),
             _ => {
                 panic!("Unhandled flag: set_flag_value(): {flag:?}")
             }
         }
+    }
+
+    
+    
+    pub(crate) fn carry_b(&self) -> u8 {
+        self.flags.carry_b()
     }
     
     #[inline]
@@ -168,6 +176,50 @@ impl Six502 {
         return lo | (hi << 8);
     }
 
+    pub(crate) fn imm(&mut self) -> Byte {
+        self.fetch_byte()
+    }
+
+    pub(crate) fn zp0(&mut self) -> Byte {
+        self.fetch_byte()
+    }
+
+    pub(crate) fn zpx(&mut self) -> Word {
+        self.clock();
+        self.fetch_byte().wrapping_add(self.x()) as Word
+    } 
+
+    pub(crate) fn abs(&mut self) -> Word {
+        self.fetch_word()
+    }
+
+    pub(crate) fn abx(&mut self, addr: &mut Word) -> bool {
+        self.clock();
+        let abs_addr = self.fetch_word();
+        *addr = abs_addr.wrapping_add(self.x() as Word);
+        (abs_addr ^ *addr) >> 8 > 0
+    }
+
+
+    pub(crate) fn aby(&mut self, addr: &mut Word) -> bool {
+        let abs_addr = self.fetch_word();
+        *addr = abs_addr.wrapping_add(self.y() as Word);
+        (abs_addr ^ *addr) >> 8 > 0
+    }
+
+    pub(crate) fn izx(&mut self) -> Word {
+        let addr = self.fetch_byte().wrapping_add(self.x());
+        self.clock();
+        self.read_word(addr as Word)
+    }
+
+    pub(crate) fn izy(&mut self, addr: &mut Word) -> bool {
+        let i_addr = self.fetch_byte();
+        let effective_addr = self.read_word(i_addr as Word);
+        self.clock();
+        *addr = effective_addr.wrapping_add(self.y() as Word);
+        ((effective_addr ^ *addr) >> 8) > 0
+    }
 
 
 

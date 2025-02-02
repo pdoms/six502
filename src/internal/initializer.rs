@@ -1,6 +1,8 @@
 use crate::instr;
 
-use super::{executors::*, modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
+use super::ops::{adc, lda};
+use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
+use super::ops::common::nop;
 
 #[inline]
 pub fn row_0() -> [InstrCode; TABLE_COLS] {
@@ -139,19 +141,19 @@ pub fn row_5() -> [InstrCode; TABLE_COLS] {
 pub fn row_6() -> [InstrCode; TABLE_COLS] {
     [
         instr!(6,0, "XXX", am::IMM, 1, nop), 
-        instr!(6,1, "XXX", am::IMM, 1, nop), 
+        instr!(6,1, "ADC", am::IZX, 6, adc::izx), 
         instr!(6,2, "XXX", am::IMM, 1, nop),
         instr!(6,3, "XXX", am::IMM, 1, nop),
         instr!(6,4, "XXX", am::IMM, 1, nop),
-        instr!(6,5, "XXX", am::IMM, 1, nop),
+        instr!(6,5, "ADC", am::ZP0, 3, adc::zp0),
         instr!(6,6, "XXX", am::IMM, 1, nop),
         instr!(6,7, "XXX", am::IMM, 1, nop),
         instr!(6,8, "XXX", am::IMM, 1, nop),
-        instr!(6,9, "XXX", am::IMM, 1, nop),
+        instr!(6,9, "ADC", am::IMM, 2, adc::imm),
         instr!(6,10, "XXX", am::IMM, 1, nop),
         instr!(6,11, "XXX", am::IMM, 1, nop),
         instr!(6,12, "XXX", am::IMM, 1, nop),
-        instr!(6,13, "XXX", am::IMM, 1, nop),
+        instr!(6,13, "ADC", am::ABS, 4, adc::abs),
         instr!(6,14, "XXX", am::IMM, 1, nop),
         instr!(6,15, "XXX", am::IMM, 1, nop),
     ]
@@ -161,19 +163,19 @@ pub fn row_6() -> [InstrCode; TABLE_COLS] {
 pub fn row_7() -> [InstrCode; TABLE_COLS] {
     [
         instr!(7,0, "XXX", am::IMM, 1, nop), 
-        instr!(7,1, "XXX", am::IMM, 1, nop), 
+        instr!(7,1, "ADC", am::IZY, 6, adc::izy), 
         instr!(7,2, "XXX", am::IMM, 1, nop),
         instr!(7,3, "XXX", am::IMM, 1, nop),
         instr!(7,4, "XXX", am::IMM, 1, nop),
-        instr!(7,5, "XXX", am::IMM, 1, nop),
+        instr!(7,5, "ADC", am::ZPX, 4, adc::zpx),
         instr!(7,6, "XXX", am::IMM, 1, nop),
         instr!(7,7, "XXX", am::IMM, 1, nop),
         instr!(7,8, "XXX", am::IMM, 1, nop),
-        instr!(7,9, "XXX", am::IMM, 1, nop),
+        instr!(7,9, "ADC", am::ABY,  5, adc::aby),
         instr!(7,10, "XXX", am::IMM, 1, nop),
         instr!(7,11, "XXX", am::IMM, 1, nop),
         instr!(7,12, "XXX", am::IMM, 1, nop),
-        instr!(7,13, "XXX", am::IMM, 1, nop),
+        instr!(7,13, "ADC", am::ABX, 5, adc::abx),
         instr!(7,14, "XXX", am::IMM, 1, nop),
         instr!(7,15, "XXX", am::IMM, 1, nop),
     ]
@@ -227,19 +229,19 @@ pub fn row_9() -> [InstrCode; TABLE_COLS] {
 pub fn row_10() -> [InstrCode; TABLE_COLS] {
     [
         instr!(10,0, "XXX", am::IMM, 1, nop), 
-        instr!(10,1, "LDA", am::IZX, 6, lda_izx), 
+        instr!(10,1, "LDA", am::IZX, 6, lda::izx), 
         instr!(10,2, "XXX", am::IMM, 1, nop),
         instr!(10,3, "XXX", am::IMM, 1, nop),
         instr!(10,4, "XXX", am::IMM, 1, nop),
-        instr!(10,5, "LDA", am::ZP0, 3, lda_zp0),
+        instr!(10,5, "LDA", am::ZP0, 3, lda::zp0),
         instr!(10,6, "XXX", am::IMM, 1, nop),
         instr!(10,7, "XXX", am::IMM, 1, nop),
         instr!(10,8, "XXX", am::IMM, 1, nop),
-        instr!(10,9, "LDA", am::IMM, 2, lda_imm),
+        instr!(10,9, "LDA", am::IMM, 2, lda::imm),
         instr!(10,10, "XXX", am::IMM, 1, nop),
         instr!(10,11, "XXX", am::IMM, 1, nop),
         instr!(10,12, "XXX", am::IMM, 1, nop),
-        instr!(10,13, "LDA", am::ABS, 4, lda_abs),
+        instr!(10,13, "LDA", am::ABS, 4, lda::abs),
         instr!(10,14, "XXX", am::IMM, 1, nop),
         instr!(10,15, "XXX", am::IMM, 1, nop),
     ]
@@ -249,19 +251,19 @@ pub fn row_10() -> [InstrCode; TABLE_COLS] {
 pub fn row_11() -> [InstrCode; TABLE_COLS] {
     [
         instr!(11,0, "XXX", am::IMM, 1, nop), 
-        instr!(11,1, "LDA", am::IZY, 6, lda_izy), 
+        instr!(11,1, "LDA", am::IZY, 6, lda::izy), 
         instr!(11,2, "XXX", am::IMM, 1, nop),
         instr!(11,3, "XXX", am::IMM, 1, nop),
         instr!(11,4, "XXX", am::IMM, 1, nop),
-        instr!(11,5, "LDA", am::ZPX, 4, lda_zpx),
+        instr!(11,5, "LDA", am::ZPX, 4, lda::zpx),
         instr!(11,6, "XXX", am::IMM, 1, nop),
         instr!(11,7, "XXX", am::IMM, 1, nop),
         instr!(11,8, "XXX", am::IMM, 1, nop),
-        instr!(11,9, "LDA", am::ABY, 5, lda_aby),
+        instr!(11,9, "LDA", am::ABY, 5, lda::aby),
         instr!(11,10, "XXX", am::IMM, 1, nop),
         instr!(11,11, "XXX", am::IMM, 1, nop),
         instr!(11,12, "XXX", am::IMM, 1, nop),
-        instr!(11,13, "LDA", am::ABX, 5, lda_abx),
+        instr!(11,13, "LDA", am::ABX, 5, lda::abx),
         instr!(11,14, "XXX", am::IMM, 1, nop),
         instr!(11,15, "XXX", am::IMM, 1, nop),
     ]

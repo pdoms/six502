@@ -10,9 +10,22 @@ pub enum FlagIndex {
     I, //Interrut
     D, //Decimal
     B, //Break -> no cpu effect
-    One, // no cpu effect, always pushed as 1
+    U, // no cpu effect, always pushed as 1
     O, //Overflow
     N, //Negative Flag
+}
+
+#[derive(Clone, Copy)]
+#[repr(u8)]
+pub enum FlagBits {
+    N = 0b10000000,
+    O = 0b01000000,
+    U = 0b00100000, //One
+    B = 0b00010000,
+    D = 0b00001000,
+    I = 0b00000100,
+    Z = 0b00000010,
+    C = 0b00000001
 }
 
 
@@ -24,7 +37,7 @@ impl From<u8> for FlagIndex {
             2 => FlagIndex::I,
             3 => FlagIndex::D,
             4 => FlagIndex::B,
-            5 => FlagIndex::One,
+            5 => FlagIndex::U,
             6 => FlagIndex::O,
             7 => FlagIndex::N,
             _ => panic!("u8 out of FlagIndex Range")
@@ -46,7 +59,7 @@ impl std::fmt::Debug for FlagIndex {
             Self::I => write!(f, "I (2)"),
             Self::D => write!(f, "D (3)"),
             Self::B => write!(f, "B (4)"),
-            Self::One => write!(f, "One (5)"),
+            Self::U => write!(f, "One (5)"),
             Self::O => write!(f, "O (6)"),
             Self::N => write!(f, "N (7)"),
         }
@@ -73,7 +86,7 @@ impl fmt::Debug for Flags {
 
 impl Flags {
     pub fn new() -> Self {
-        let inner = setbit!(0, FlagIndex::One);
+        let inner = setbit!(0, FlagIndex::U);
         Self {inner}
     }
 
@@ -87,7 +100,7 @@ impl Flags {
     }
 
     pub fn reset(&mut self) {
-        self.inner = 0;
+        self.inner = setbit!(0, FlagIndex::U);
     }
 
     /// Sets Zero Flag if provided value = 0
@@ -112,11 +125,49 @@ impl Flags {
     pub fn neg(&self) -> bool {
         bitset!(self.inner, FlagIndex::N) != 0
     }
+
+    pub fn set_carry(&mut self, v: u8) {
+        if v > 0 {
+            println!("setting c");
+            self.inner = setbit!(self.inner, FlagIndex::C)
+        } else {
+            println!("clear c");
+            self.inner = clearbit!(self.inner, FlagIndex::C)
+        }
+    }
+
+    pub fn carry(&self) -> bool {
+        bitset!(self.inner, FlagIndex::C) != 0
+    }
+    pub fn carry_b(&self) -> u8 {
+        bitset!(self.inner, FlagIndex::C)
+    }
+    pub fn set_overflow(&mut self, v: u8) {
+        if v > 0 {
+            self.inner = setbit!(self.inner, FlagIndex::O)
+        } else {
+            self.inner = clearbit!(self.inner, FlagIndex::O)
+        }
+    }
+
+    pub fn one(&self) -> bool {
+        bitset!(self.inner, FlagIndex::U) != 0
+    }
+
+    pub fn overflow(&self) -> bool {
+        bitset!(self.inner, FlagIndex::O) != 0
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::Flags;
+
+    #[test]
+    fn break_is_set() {
+        let flag = Flags::new();
+        assert!(flag.one());
+    }
 
     #[test]
     fn set_z_flag() {

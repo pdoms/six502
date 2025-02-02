@@ -192,8 +192,4 @@ fn instr_correct_spots() {
     assert_eq!(instructions[0xB9].cycles, 5);
     assert_eq!(instructions[0xBD].mnemonic, "LDA");
     assert_eq!(instructions[0xBD].mode, AddressingMode::ABX);
-
-
-
-
 }
