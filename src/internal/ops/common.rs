@@ -12,7 +12,7 @@ pub fn nop(_cpu: &mut Six502) -> bool {
     false
 }
 
-pub fn flags_z_n(cpu: &mut Six502) {
+pub fn a_flags_z_n(cpu: &mut Six502) {
     let a = cpu.a();
     cpu.set_flag_value(FlagIndex::Z, a);
     cpu.set_flag_value(FlagIndex::N, a);
@@ -26,10 +26,20 @@ pub fn adc(cpu: &mut Six502, operand: Byte) {
     sum += operand as Word;
     sum += cpu.carry_b() as Word;
     cpu.set_a(sum as u8 & 0xFF);
-    flags_z_n(cpu);
+    a_flags_z_n(cpu);
     //set carry
     cpu.set_flag_value(FlagIndex::C, (sum  > 0xFF) as u8);
     //set overvlow
     let v = check_overflow_pre(cpu.a(), operand, eq_signed_bits);
     cpu.set_flag_value(FlagIndex::O, v as u8);
 }
+
+
+pub fn and(cpu: &mut Six502, addr: Word) {
+    let b = cpu.read_byte(addr);
+    let a = cpu.a_mut();
+    *a &= b;
+    a_flags_z_n(cpu);
+}
+
+

@@ -1,50 +1,44 @@
 //######################################################
-//###############    #       ####   ###  ###############
-//###############   #       #   #  #  #  ###############
-//###############  #       #   #  #####  ###############
-//############### ######  ####   #    #  ###############
+//###############    ###     ##   #   ####  ############
+//###############   #  #    # #  #   #   #  ############
+//###############  #####   #  # #   #   #   ############
+//############### #    #  #   ##   ####     ############
 //######################################################
 
-use crate::{cpu::{Six502, Word}, internal::ops::common::a_flags_z_n};
-
+use crate::{cpu::{Six502, Word}, internal::ops::common::and};
 
 pub fn imm(cpu: &mut Six502) -> bool {
     let b = cpu.imm();
-    cpu.set_a(b);
-    a_flags_z_n(cpu);
+    *cpu.a_mut() &= b;
     assert!(cpu.cycles_at(0));
     return true;
 }
 
 pub fn zp0(cpu: &mut Six502) -> bool {
     let addr = cpu.zp0();
-    cpu.load_a(addr as Word);
-    a_flags_z_n(cpu);
+    and(cpu, addr as Word);
     assert!(cpu.cycles_at(0));
     return true;
 }
 
-pub fn zpx(cpu: &mut Six502) -> bool {
+
+pub fn zpx(cpu: &mut Six502) -> bool { 
     let addr = cpu.zpx();
-    cpu.load_a(addr);
-    a_flags_z_n(cpu);
+    and(cpu, addr as Word);
     assert!(cpu.cycles_at(0));
     return true;
 }
 
 pub fn abs(cpu: &mut Six502) -> bool {
     let addr = cpu.abs();
-    cpu.load_a(addr);
-    a_flags_z_n(cpu);
+    and(cpu, addr);
     assert!(cpu.cycles_at(0));
     return true;
 } 
-
 pub fn abx(cpu: &mut Six502) -> bool {
     let mut abs_addr_x = 0;
     let cross = cpu.abx(&mut abs_addr_x);
-    cpu.load_a(abs_addr_x);
-    a_flags_z_n(cpu);
+    and(cpu, abs_addr_x);
     if cross {
         cpu.clock();
     } else {
@@ -54,13 +48,12 @@ pub fn abx(cpu: &mut Six502) -> bool {
     }
     assert!(cpu.cycles_at(0));
     return true;
-}
 
+} 
 pub fn aby(cpu: &mut Six502) -> bool {
     let mut abs_addr_y = 0;
     let cross = cpu.aby(&mut abs_addr_y);
-    cpu.load_a(abs_addr_y);
-    a_flags_z_n(cpu);
+    and(cpu, abs_addr_y);
     if cross {
         cpu.clock();
     } else {
@@ -74,17 +67,15 @@ pub fn aby(cpu: &mut Six502) -> bool {
 
 pub fn izx(cpu: &mut Six502) -> bool {
     let effective_addr = cpu.izx();
-    cpu.load_a(effective_addr);
-    a_flags_z_n(cpu);
+    and(cpu, effective_addr);
     assert!(cpu.cycles_at(0));
     return true;
-
 }
+
 pub fn izy(cpu: &mut Six502) -> bool {
-    let mut effective_addr_y = 0;
-    let cross = cpu.izy(&mut effective_addr_y);
-    cpu.load_a(effective_addr_y);
-    a_flags_z_n(cpu);
+    let mut effective_addr = 0;
+    let cross = cpu.izy(&mut effective_addr);
+    and(cpu, effective_addr);
     if cross {
         cpu.clock();
     } else {
@@ -94,4 +85,4 @@ pub fn izy(cpu: &mut Six502) -> bool {
     }
     assert!(cpu.cycles_at(0));
     return true;
-}
+} 

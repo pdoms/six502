@@ -1,4 +1,4 @@
-use crate::{cpu::{Six502, Word}, flags::{FlagIndex, Flags}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
+use crate::{cpu::{Register, Six502, Word}, flags::{FlagIndex, Flags}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 #[test]
 fn imm() {
@@ -70,20 +70,18 @@ fn zp0() {
 
 #[test]
 fn zpx() {
-    let bytes = 0;
-    let start = 0xFFF;
-
-    let mem = &[OpCode::LdaImm.into(), 0x02, 0, 0, OpCode::Nop.into()];
-
+    let bytes_per_instr = 2+2;
+    let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcZpx.into(), 0x80, OpCode::Nop.into()];
     let mut cpu = Six502::new();
-    cpu.set_pc(start);
+    cpu.set_pc(0xFFF);
     cpu.load_to_pc(mem);
-
+    cpu.set_reg_byte(Register::X, 0x0F);
+    cpu.set_byte_at(0x8F, 0x02);
     cpu.execute();
-    let pc = 0xFFF+bytes+1;
+    let pc = 0xFFF+bytes_per_instr+1;
     let sp = 0;
-    let a = 0;
-    let x = 0;
+    let a = 0x04;
+    let x = 0x0F;
     let y = 0;
     let cycles = 0;
     let flags = Flags::fix_state(&[]);
@@ -234,8 +232,8 @@ fn instr_correct_spots() {
     assert_eq!(instructions[0x71].mode, AddressingMode::IZY);
     assert_eq!(instructions[0x75].mnemonic, "ADC");
     assert_eq!(instructions[0x75].mode, AddressingMode::ZPX);
-    assert_eq!(instructions[0x69].mnemonic, "ADC");
-    assert_eq!(instructions[0x69].mode, AddressingMode::ABY);
+    assert_eq!(instructions[0x79].mnemonic, "ADC");
+    assert_eq!(instructions[0x79].mode, AddressingMode::ABY);
     assert_eq!(instructions[0x7D].mnemonic, "ADC");
     assert_eq!(instructions[0x7D].mode, AddressingMode::ABX);
 }

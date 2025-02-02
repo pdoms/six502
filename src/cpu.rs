@@ -118,6 +118,11 @@ impl Six502 {
     }
 
     #[inline]
+    pub(crate) fn a_mut(&mut self) -> &mut Byte {
+        &mut self.a
+    }
+
+    #[inline]
     pub(crate) fn x(&mut self) -> Byte {
         self.x
     }

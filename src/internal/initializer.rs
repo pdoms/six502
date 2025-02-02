@@ -1,6 +1,6 @@
 use crate::instr;
 
-use super::ops::{adc, lda};
+use super::ops::{adc, and, lda};
 use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
 use super::ops::common::nop;
 
@@ -51,19 +51,19 @@ pub fn row_1() -> [InstrCode; TABLE_COLS] {
 pub fn row_2() -> [InstrCode; TABLE_COLS] {
     [
         instr!(2,0, "XXX", am::IMM, 1, nop), 
-        instr!(2,1, "AND", am::IZX, 6, nop), 
+        instr!(2,1, "AND", am::IZX, 6, and::izx), 
         instr!(2,2, "XXX", am::IMM, 1, nop),
         instr!(2,3, "XXX", am::IMM, 1, nop),
         instr!(2,4, "XXX", am::IMM, 1, nop),
-        instr!(2,5, "XXX", am::IMM, 1, nop),
+        instr!(2,5, "AND", am::ZP0, 3, and::zp0),
         instr!(2,6, "XXX", am::IMM, 1, nop),
         instr!(2,7, "XXX", am::IMM, 1, nop),
         instr!(2,8, "XXX", am::IMM, 1, nop),
-        instr!(2,9, "XXX", am::IMM, 1, nop),
+        instr!(2,9, "AND", am::IMM, 2, and::imm),
         instr!(2,10, "XXX", am::IMM, 1, nop),
         instr!(2,11, "XXX", am::IMM, 1, nop),
         instr!(2,12, "XXX", am::IMM, 1, nop),
-        instr!(2,13, "XXX", am::IMM, 1, nop),
+        instr!(2,13, "AND", am::ABS, 4, and::abs),
         instr!(2,14, "XXX", am::IMM, 1, nop),
         instr!(2,15, "XXX", am::IMM, 1, nop),
     ]
@@ -73,19 +73,19 @@ pub fn row_2() -> [InstrCode; TABLE_COLS] {
 pub fn row_3() -> [InstrCode; TABLE_COLS] {
     [
         instr!(3,0, "XXX", am::IMM, 1, nop), 
-        instr!(3,1, "XXX", am::IMM, 1, nop), 
+        instr!(3,1, "AND", am::IZY, 6, and::izy), 
         instr!(3,2, "XXX", am::IMM, 1, nop),
         instr!(3,3, "XXX", am::IMM, 1, nop),
         instr!(3,4, "XXX", am::IMM, 1, nop),
-        instr!(3,5, "XXX", am::IMM, 1, nop),
+        instr!(3,5, "AND", am::ZPX, 4, and::zpx),
         instr!(3,6, "XXX", am::IMM, 1, nop),
         instr!(3,7, "XXX", am::IMM, 1, nop),
         instr!(3,8, "XXX", am::IMM, 1, nop),
-        instr!(3,9, "XXX", am::IMM, 1, nop),
+        instr!(3,9, "AND", am::ABY, 5, and::aby),
         instr!(3,10, "XXX", am::IMM, 1, nop),
         instr!(3,11, "XXX", am::IMM, 1, nop),
         instr!(3,12, "XXX", am::IMM, 1, nop),
-        instr!(3,13, "XXX", am::IMM, 1, nop),
+        instr!(3,13, "AND", am::ABX, 6, and::abx),
         instr!(3,14, "XXX", am::IMM, 1, nop),
         instr!(3,15, "XXX", am::IMM, 1, nop),
     ]
