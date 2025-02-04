@@ -181,6 +181,11 @@ impl Six502 {
         return lo | (hi << 8);
     }
 
+    pub(crate) fn write_byte(&mut self, addr: Word, b: Byte) {
+        self.mem[addr] = b;
+        self.clock();
+    }
+
     pub(crate) fn imm(&mut self) -> Byte {
         self.fetch_byte()
     }
@@ -227,6 +232,10 @@ impl Six502 {
     }
 
 
+    #[cfg(test)]
+    pub(crate) fn byte_at(&self, at: Word) -> Byte {
+        self.mem[at]
+    }
 
     #[cfg(test)]
     pub(crate) fn mem_section(&self, start: usize, len: usize) {
@@ -253,6 +262,7 @@ impl Six502 {
     pub(crate) fn set_pc(&mut self, pc: Word) {
         self.pc = pc;
     }
+
 
     #[cfg(test)]
     pub(crate) fn assert_state(&self, 

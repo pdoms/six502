@@ -1,6 +1,6 @@
 use crate::instr;
 
-use super::ops::{adc, and, lda};
+use super::ops::{adc, and, asl, lda};
 use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
 use super::ops::common::nop;
 
@@ -13,15 +13,15 @@ pub fn row_0() -> [InstrCode; TABLE_COLS] {
         instr!(0,3, "XXX", am::IMM, 1, nop),
         instr!(0,4, "XXX", am::IMM, 1, nop),
         instr!(0,5, "XXX", am::IMM, 1, nop),
-        instr!(0,6, "XXX", am::IMM, 1, nop),
+        instr!(0,6, "ASL", am::ZP0, 5, asl::zp0),
         instr!(0,7, "XXX", am::IMM, 1, nop),
         instr!(0,8, "XXX", am::IMM, 1, nop),
         instr!(0,9, "XXX", am::IMM, 1, nop),
-        instr!(0,10, "XXX", am::IMM, 1, nop),
+        instr!(0,10, "ASL", am::ACC, 2, asl::acc),
         instr!(0,11, "XXX", am::IMM, 1, nop),
         instr!(0,12, "XXX", am::IMM, 1, nop),
         instr!(0,13, "XXX", am::IMM, 1, nop),
-        instr!(0,14, "XXX", am::IMM, 1, nop),
+        instr!(0,14, "ASL", am::ABS, 6, asl::abs),
         instr!(0,15, "XXX", am::IMM, 1, nop),
     ]
 }
@@ -34,7 +34,7 @@ pub fn row_1() -> [InstrCode; TABLE_COLS] {
         instr!(1,3, "XXX", am::IMM, 1, nop),
         instr!(1,4, "XXX", am::IMM, 1, nop),
         instr!(1,5, "XXX", am::IMM, 1, nop),
-        instr!(1,6, "XXX", am::IMM, 1, nop),
+        instr!(1,6, "ASL", am::ZPX, 6, asl::zpx),
         instr!(1,7, "XXX", am::IMM, 1, nop),
         instr!(1,8, "XXX", am::IMM, 1, nop),
         instr!(1,9, "XXX", am::IMM, 1, nop),
@@ -42,7 +42,7 @@ pub fn row_1() -> [InstrCode; TABLE_COLS] {
         instr!(1,11, "XXX", am::IMM, 1, nop),
         instr!(1,12, "XXX", am::IMM, 1, nop),
         instr!(1,13, "XXX", am::IMM, 1, nop),
-        instr!(1,14, "XXX", am::IMM, 1, nop),
+        instr!(1,14, "ASL", am::ABX, 7, asl::abx),
         instr!(1,15, "XXX", am::IMM, 1, nop),
     ]
 }

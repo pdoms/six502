@@ -14,7 +14,8 @@ pub enum AddressingMode {
     ABY,
     IND, // Indirect
     IZX, // aka Indexed Indirect
-    IZY  // aka Indirect Indexed
+    IZY, // aka Indirect Indexed
+    ACC, // accumulator direct
 }
 
 

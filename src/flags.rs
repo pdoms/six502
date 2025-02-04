@@ -45,6 +45,8 @@ impl From<u8> for FlagIndex {
     }
 }
 
+
+
 impl Into<u8> for FlagIndex {
     fn into(self) -> u8 {
         self as u8
@@ -128,10 +130,8 @@ impl Flags {
 
     pub fn set_carry(&mut self, v: u8) {
         if v > 0 {
-            println!("setting c");
             self.inner = setbit!(self.inner, FlagIndex::C)
         } else {
-            println!("clear c");
             self.inner = clearbit!(self.inner, FlagIndex::C)
         }
     }
