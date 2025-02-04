@@ -1,4 +1,4 @@
-use crate::flags::FlagBits;
+use crate::{cpu::Word, flags::FlagBits};
 
 
 
@@ -8,6 +8,10 @@ pub fn eq_sign_bits(i: u8, j: u8) -> bool {
 
 pub fn check_overflow_pre(i: u8, j: u8, pre: bool) -> bool {
     pre && ((i ^ j) & (FlagBits::N as u8)) > 0
+}
+
+pub fn page_x_word(new: Word, old: Word) -> bool {
+    (new >> 8) != (old >> 8)
 }
 
 

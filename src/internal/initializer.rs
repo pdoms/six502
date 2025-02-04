@@ -1,6 +1,6 @@
 use crate::instr;
 
-use super::ops::{adc, and, asl, lda};
+use super::ops::{adc, and, asl, bcc, bcs, lda};
 use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
 use super::ops::common::nop;
 
@@ -206,7 +206,7 @@ pub fn row_8() -> [InstrCode; TABLE_COLS] {
 #[inline]
 pub fn row_9() -> [InstrCode; TABLE_COLS] {
     [
-        instr!(9,0, "XXX", am::IMP, 1, nop), 
+        instr!(9,0, "BCC", am::REL, 4, bcc::rel), 
         instr!(9,1, "XXX", am::IMP, 1, nop), 
         instr!(9,2, "XXX", am::IMM, 1, nop),
         instr!(9,3, "XXX", am::IMM, 1, nop),
@@ -250,7 +250,7 @@ pub fn row_10() -> [InstrCode; TABLE_COLS] {
 #[inline]
 pub fn row_11() -> [InstrCode; TABLE_COLS] {
     [
-        instr!(11,0, "XXX", am::IMM, 1, nop), 
+        instr!(11,0, "BCS", am::REL, 4, bcs::rel), 
         instr!(11,1, "LDA", am::IZY, 6, lda::izy), 
         instr!(11,2, "XXX", am::IMM, 1, nop),
         instr!(11,3, "XXX", am::IMM, 1, nop),

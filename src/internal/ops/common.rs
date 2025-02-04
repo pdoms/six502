@@ -1,4 +1,4 @@
-use crate::{common::{check_overflow_pre, eq_sign_bits}, cpu::{Byte, Six502, Word}, flags::{FlagBits, FlagIndex}};
+use crate::{common::{check_overflow_pre, eq_sign_bits, page_x_word}, cpu::{Byte, Six502, Word}, flags::{FlagBits, FlagIndex}};
 
 
 /// It was deliberately decided tp keep
@@ -53,6 +53,26 @@ pub fn asl(cpu: &mut Six502, operand: Byte) -> Byte {
     cpu.clock();
     flags_z_n(cpu, result);
     result
+}
+
+/// returns how many cycles should be left
+pub fn branch_if(cpu: &mut Six502, test: u8, exp: u8) -> i64 {
+    let mut offset = cpu.fetch_byte() as Word;
+    if (offset & 0x80) > 0 {
+        offset |= 0xFF00;
+    }
+    if test == exp {
+        let prev_pc = cpu.pc();
+        let new_pc = prev_pc.wrapping_add(offset);
+        *cpu.pc_mut() = new_pc;
+        cpu.clock(); 
+        if page_x_word(cpu.pc(), prev_pc) {
+            cpu.clock();
+            return 0;
+        }
+        return 1;
+    }
+    2
 }
 
 

@@ -2,6 +2,7 @@ use crate::{flags::{FlagIndex, Flags}, internal::{Instructions, opcodes::OpCode}
 };
 
 pub type Byte = u8;
+pub type SByte = i8;
 pub type Word = u16;
 
 #[cfg(test)]
@@ -99,6 +100,10 @@ impl Six502 {
     pub(crate) fn carry_b(&self) -> u8 {
         self.flags.carry_b()
     }
+
+    pub(crate) fn c(&self) -> bool {
+        self.flags.carry()
+    }
     
     #[inline]
     pub(crate) fn set_a(&mut self, b: Byte) {
@@ -130,6 +135,16 @@ impl Six502 {
     #[inline]
     pub(crate) fn y(&mut self) -> Byte {
         self.y
+    }
+
+    #[inline]
+    pub(crate) fn pc(&self) -> Word {
+        self.pc
+    }
+
+    #[inline]
+    pub (crate) fn pc_mut(&mut self) -> &mut Word {
+        &mut self.pc
     }
     
     pub fn execute(&mut self) {
@@ -181,6 +196,14 @@ impl Six502 {
         return lo | (hi << 8);
     }
 
+    /// Returns byte at pc and increases pc
+    pub(crate) fn fetch_signed_byte(&mut self) -> SByte {
+        let b = self.mem[self.pc];
+        self.log.info(format!("Fetched byte {b:#02x} from mem[{:#02x}]", self.pc).as_str());
+        self.pc +=1;
+        self.clock();
+        return b as i8;
+    }
     pub(crate) fn write_byte(&mut self, addr: Word, b: Byte) {
         self.mem[addr] = b;
         self.clock();
