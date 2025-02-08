@@ -1,11 +1,16 @@
-use crate::{flags::{Flag::{self}, Flag6502, DEFAULT_STATUS}, internal::{opcodes::OpCode, Instructions}, log::Log, mem::Mem
+use crate::{flags::{flag_debug, Flag::{self}, Flag6502, DEFAULT_STATUS}, internal::{opcodes::OpCode, Instructions}, log::{self, Log}, mem::Mem
 };
 
 pub type Byte = u8;
 pub type SByte = i8;
 pub type Word = u16;
 
-#[cfg(test)]
+pub const ST_ADDR: Word = 0x0100;
+pub const ST_SIZE: Word = 0x00FF;
+const SP_INIT: Byte = 0xFF;
+
+pub const INERRUPT_VECTOR: Word = 0xFFFE;
+
 pub enum Register {
     A,
     X,
@@ -32,7 +37,7 @@ impl Six502 {
     pub fn new() -> Self {
         Self {
             pc: 0xFFFC,
-            sp: 0,
+            sp: SP_INIT,
             a: 0,
             x: 0,
             y: 0,
@@ -55,7 +60,7 @@ impl Six502 {
         //    PC to 0xFFFC
         self.pc = 0xFFFC;
         //    SP to 0xFF
-        self.sp = 0xFF;
+        self.sp = SP_INIT;
         //    all flags to zero
         self.status = DEFAULT_STATUS;
         //    all registers to zero
@@ -85,9 +90,12 @@ impl Six502 {
 
     #[inline]
     pub(crate) fn set_flag(&mut self, flag: Flag6502, v: u8) {
+        
         if v > 0 {
+            self.log.info(format!("Setting {:?} {:08b}", flag_debug(flag), self.status).as_str());
             self.status |= flag as Byte;
         } else {
+            self.log.info(format!("Clearing {:?} {:08b}", flag_debug(flag), self.status).as_str());
             self.status &= !(flag as Byte)
         }
     }
@@ -252,6 +260,29 @@ impl Six502 {
         ((effective_addr ^ *addr) >> 8) > 0
     }
 
+    pub(crate) fn push_stack(&mut self, data: Byte) {
+        let addr = ST_ADDR + self.sp as Word;
+        self.mem[addr] = data;
+        self.log.info(format!("Pushing {data:#02x} to stack at {:#02x}", self.sp).as_str());
+        self.sp -= 1;
+        self.clock();
+    }
+
+    pub(crate) fn pop_stack(&mut self) -> Byte {
+        self.sp += 1;
+        let addr = ST_ADDR + self.sp as Word;
+        let data = self.mem[addr];
+        self.clock();
+        self.log.info(format!("Popping {data:#02x} from stack at {:#02x}", self.sp).as_str());
+        data
+    }
+
+    #[cfg(test)]
+    pub(crate) fn read_stack(&self) -> Byte {
+        let addr = ST_ADDR + (self.sp + 0x1) as Word;
+        self.mem[addr]
+    }
+
 
     #[cfg(test)]
     pub(crate) fn byte_at(&self, at: Word) -> Byte {
@@ -338,5 +369,21 @@ impl std::fmt::Debug for Six502 {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use crate::cpu::SP_INIT;
 
+    use super::Six502;
+
+    #[test]
+    fn cpu_stack() {
+        let mut cpu = Six502::new();
+        assert_eq!(cpu.sp, SP_INIT);
+        cpu.push_stack(0x01);
+        assert_eq!(cpu.read_stack(), 0x01);
+        cpu.push_stack(0x02);
+        assert_eq!(cpu.pop_stack(), 0x02);
+        assert_eq!(cpu.read_stack(), 0x01);
+    }
+}
 

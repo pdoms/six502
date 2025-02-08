@@ -4,11 +4,11 @@
 - [x] BCC
 - [x] BCS
 - [ ] BEQ
-- [ ] BIT
+- [x] BIT
 - [ ] BMI
 - [ ] BNE
 - [ ] BPL
-- [ ] BRK
+- [x] BRK
 - [ ] BVC
 - [ ] BVS
 - [ ] CLC

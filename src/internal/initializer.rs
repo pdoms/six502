@@ -1,13 +1,13 @@
 use crate::instr;
 
-use super::ops::{adc, and, asl, bcc, bcs, bit, lda};
+use super::ops::{adc, and, asl, bcc, bcs, bit, brk, lda};
 use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
 use super::ops::common::nop;
 
 #[inline]
 pub fn row_0() -> [InstrCode; TABLE_COLS] {
     [
-        instr!(0,0, "XXX", am::IMM, 1, nop), 
+        instr!(0,0, "BRK", am::IMP, 7, brk::imp), 
         instr!(0,1, "XXX", am::IMM, 1, nop),
         instr!(0,2, "XXX", am::IMM, 1, nop), //this is the current HALT op
         instr!(0,3, "XXX", am::IMM, 1, nop),

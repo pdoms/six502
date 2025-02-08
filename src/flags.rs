@@ -15,6 +15,20 @@ pub mod Flag {
     pub const N: u8 = 1 << 7;   // Negative Flag                        
 }
 
+pub fn flag_debug(f: Flag6502) -> String {
+    match f {
+        Flag::C => String::from("C"),
+        Flag::Z => String::from("Z"),
+        Flag::I => String::from("I"),
+        Flag::D => String::from("D"),
+        Flag::B => String::from("B"),
+        Flag::U => String::from("U"),
+        Flag::V => String::from("V"),
+        Flag::N => String::from("N"),
+        _ => unreachable!()
+    }
+}
+
 #[cfg(test)]
 pub(crate) fn set_flag(status: &mut Byte, flag: Flag6502, v: u8) {
     if v > 0 {
