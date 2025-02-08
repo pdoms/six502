@@ -1,4 +1,4 @@
-use crate::{cpu::Six502, flags::DEFAULT_STATUS, internal::opcodes::OpCode};
+use crate::{cpu::{Six502, SP_INIT}, flags::DEFAULT_STATUS, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 #[test]
 fn imp() {
@@ -11,7 +11,7 @@ fn imp() {
     cpu.set_byte_at(0x1211, OpCode::Nop.into());
     cpu.execute();
     let pc = 0x1211+1;
-    let sp = 0xFF-3;
+    let sp = SP_INIT - 3;
     let a = 0x0;
     let x = 0;
     let y = 0;
@@ -19,3 +19,11 @@ fn imp() {
     let status = DEFAULT_STATUS;
     cpu.assert_state(pc, sp, a, x, y, cycles, status);
 }
+
+#[test]
+fn instr_correct_spots() {
+    let instructions = Instructions::init();
+    assert_eq!(instructions[0x00].mnemonic, "BRK"); 
+    assert_eq!(instructions[0x00].mode, AddressingMode::IMP);
+}
+

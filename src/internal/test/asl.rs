@@ -1,4 +1,4 @@
-use crate::{cpu::{Register, Six502, Word}, 
+use crate::{cpu::{Register, Six502, Word, SP_INIT}, 
     flags:: DEFAULT_STATUS, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 #[test]
@@ -10,7 +10,7 @@ fn acc() {
     cpu.load_to_pc(mem);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0x6;
     let x = 0;
     let y = 0;
@@ -29,7 +29,7 @@ fn zp0() {
     cpu.set_byte_at(zp_addr as Word, 0xE); 
     cpu.execute(); 
     let pc = 0xFFF+bytes+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0;
     let y = 0;
@@ -50,7 +50,7 @@ fn zpx() {
     cpu.set_byte_at(0x8F, 0x05);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0x0;
     let x = 0x0F;
     let y = 0;
@@ -74,7 +74,7 @@ fn abs() {
 
     cpu.execute();
     let pc = 0xFFF+bytes+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0;
     let y = 0;
@@ -98,7 +98,7 @@ fn abx() {
     cpu.set_byte_at(0x3092, 0xE);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0x92;
     let y = 0;

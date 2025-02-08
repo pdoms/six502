@@ -1,5 +1,5 @@
 use crate::{
-    cpu::{Register, Six502, Word}, 
+    cpu::{Register, Six502, Word, SP_INIT}, 
     flags::{set_flag, Flag, DEFAULT_STATUS}, 
     internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
@@ -11,7 +11,7 @@ fn imm() {
     cpu.load_to_pc(mem);
     cpu.execute();
     let pc = 65535;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 34;
     let x = 0;
     let y = 0;
@@ -27,7 +27,7 @@ fn zp0() {
     cpu.set_byte_at(zp_addr as Word, 0xF1);
     cpu.execute();
     let pc = 65535;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 241;
     let x = 0;
     let y = 0;
@@ -48,7 +48,7 @@ fn zpx() {
     cpu.set_byte_at(0x8F, 0x22);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 34;
     let x = 0x0F;
     let y = 0;
@@ -63,7 +63,7 @@ fn zpx() {
     cpu2.set_byte_at(0x7F, 0x22);
     cpu2.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 34;
     let x = 0xFF;
     let y = 0;
@@ -81,7 +81,7 @@ fn abs() {
     cpu.set_byte_at(0xAA11, 0x01);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 1;
     let x = 0;
     let y = 0;
@@ -100,7 +100,7 @@ fn abx() {
     cpu.set_byte_at(0x2092, 0x22);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 34;
     let x = 0x92;
     let y = 0;
@@ -119,7 +119,7 @@ fn aby() {
     cpu.set_byte_at(0x2092, 0xF1);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 241;
     let x = 0;
     let y = 0x92;
@@ -142,7 +142,7 @@ fn izx() {
     cpu.set_byte_at(0x0201, 0x22);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 34;
     let x = 0x04;
     let y = 0;
@@ -163,7 +163,7 @@ fn izy() {
     cpu.set_byte_at(0x0205, 0x22);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 34;
     let x = 0;
     let y = 0x04;

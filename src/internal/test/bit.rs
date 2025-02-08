@@ -1,4 +1,4 @@
-use crate::{cpu::Six502, flags::{set_flag, Flag::{N, V, Z}, DEFAULT_STATUS}, internal::opcodes::OpCode};
+use crate::{cpu::{Six502, SP_INIT}, flags::{set_flag, Flag::{N, V, Z}, DEFAULT_STATUS}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 
 #[test]
@@ -11,7 +11,7 @@ fn zp0() {
     cpu.set_byte_at(0x01, 0xEE);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0x55;
     let x = 0;
     let y = 0;
@@ -33,7 +33,7 @@ fn abs() {
     cpu.set_byte_at(0x1211, 0x05);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0x01;
     let x = 0;
     let y = 0;
@@ -41,4 +41,14 @@ fn abs() {
     let mut status = DEFAULT_STATUS;
     set_flag(&mut status, Z, 1);
     cpu.assert_state(pc, sp, a, x, y, cycles, status);
+}
+
+
+#[test]
+fn instr_correct_spots() {
+    let instructions = Instructions::init();
+    assert_eq!(instructions[0x24].mnemonic, "BIT"); 
+    assert_eq!(instructions[0x24].mode, AddressingMode::ZP0);
+    assert_eq!(instructions[0x2c].mnemonic, "BIT"); 
+    assert_eq!(instructions[0x2c].mode, AddressingMode::ABS);
 }

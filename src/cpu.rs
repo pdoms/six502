@@ -7,7 +7,7 @@ pub type Word = u16;
 
 pub const ST_ADDR: Word = 0x0100;
 pub const ST_SIZE: Word = 0x00FF;
-const SP_INIT: Byte = 0xFF;
+pub const SP_INIT: Byte = 0xFF;
 
 pub const INERRUPT_VECTOR: Word = 0xFFFE;
 

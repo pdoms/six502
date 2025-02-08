@@ -1,4 +1,4 @@
-use crate::{cpu::Six502, flags::{set_flag, Flag, DEFAULT_STATUS}, internal::opcodes::OpCode};
+use crate::{cpu::{Six502, SP_INIT}, flags::{set_flag, Flag, DEFAULT_STATUS}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 
 
@@ -16,7 +16,7 @@ fn bcc_branch_forward() {
     cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0x1015 + 2;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0;
     let y = 0;
@@ -38,7 +38,8 @@ fn bcc_branch_backward() {
     cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0xFFF + 2 - 18;
-    let sp = 0;
+    let sp = SP_INIT;
+    let a = 0;
     let a = 0;
     let x = 0;
     let y = 0;
@@ -59,7 +60,7 @@ fn bcc_no_branch() {
     cpu.set_flag(Flag::C, 1);
     cpu.execute();
     let pc = 0xFFF+2;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0;
     let y = 0;
@@ -85,7 +86,7 @@ fn bcs_branch() {
 
     cpu.execute();
     let pc = 0x1015 + 2;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0;
     let y = 0;
@@ -109,10 +110,19 @@ fn bcs_no_branch() {
     cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0xFFF+2;
-    let sp = 0;
+    let sp = SP_INIT;
     let a = 0;
     let x = 0;
     let y = 0;
     let cycles = 0;
     cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
+}
+
+#[test]
+fn instr_correct_spots() {
+    let instructions = Instructions::init();
+    assert_eq!(instructions[0x90].mnemonic, "BCC"); 
+    assert_eq!(instructions[0x90].mode, AddressingMode::REL);
+    assert_eq!(instructions[0xB0].mnemonic, "BCS"); 
+    assert_eq!(instructions[0xB0].mode, AddressingMode::REL);
 }
