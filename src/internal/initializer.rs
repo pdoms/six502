@@ -1,6 +1,6 @@
 use crate::instr;
 
-use super::ops::{adc, and, asl, bcc, bcs, lda};
+use super::ops::{adc, and, asl, bcc, bcs, bit, lda};
 use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
 use super::ops::common::nop;
 
@@ -54,7 +54,7 @@ pub fn row_2() -> [InstrCode; TABLE_COLS] {
         instr!(2,1, "AND", am::IZX, 6, and::izx), 
         instr!(2,2, "XXX", am::IMM, 1, nop),
         instr!(2,3, "XXX", am::IMM, 1, nop),
-        instr!(2,4, "XXX", am::IMM, 1, nop),
+        instr!(2,4, "BIT", am::ZP0, 3, bit::zp0),
         instr!(2,5, "AND", am::ZP0, 3, and::zp0),
         instr!(2,6, "XXX", am::IMM, 1, nop),
         instr!(2,7, "XXX", am::IMM, 1, nop),
@@ -62,7 +62,7 @@ pub fn row_2() -> [InstrCode; TABLE_COLS] {
         instr!(2,9, "AND", am::IMM, 2, and::imm),
         instr!(2,10, "XXX", am::IMM, 1, nop),
         instr!(2,11, "XXX", am::IMM, 1, nop),
-        instr!(2,12, "XXX", am::IMM, 1, nop),
+        instr!(2,12, "BIT", am::ABS, 4, bit::abs),
         instr!(2,13, "AND", am::ABS, 4, and::abs),
         instr!(2,14, "XXX", am::IMM, 1, nop),
         instr!(2,15, "XXX", am::IMM, 1, nop),

@@ -1,5 +1,10 @@
-use crate::{common::{check_overflow_pre, eq_sign_bits, page_x_word}, cpu::{Byte, Six502, Word}, flags::{FlagBits, FlagIndex}};
-
+use crate::{
+    common::{
+        check_overflow_pre, eq_sign_bits, page_x_word}, 
+    cpu::{
+        Byte, Six502, Word}, 
+    flags::Flag
+};
 
 /// It was deliberately decided tp keep
 /// the addressing mode operations inside the 
@@ -14,13 +19,13 @@ pub fn nop(_cpu: &mut Six502) -> bool {
 
 pub fn a_flags_z_n(cpu: &mut Six502) {
     let a = cpu.a();
-    cpu.set_flag_value(FlagIndex::Z, a);
-    cpu.set_flag_value(FlagIndex::N, a);
+    cpu.set_flag(Flag::Z, (a == 0) as u8);
+    cpu.set_flag(Flag::N, a & 0x80);
 }
 
 pub fn flags_z_n(cpu: &mut Six502, result: Byte) {
-    cpu.set_flag_value(FlagIndex::Z, result);
-    cpu.set_flag_value(FlagIndex::N, result);
+    cpu.set_flag(Flag::Z, (result == 0) as u8);
+    cpu.set_flag(Flag::N, result & 0x80);
 }
 
 
@@ -29,14 +34,14 @@ pub fn adc(cpu: &mut Six502, operand: Byte) {
     let eq_signed_bits: bool = eq_sign_bits(cpu.a(), operand); 
     let mut sum = cpu.a() as Word;
     sum += operand as Word;
-    sum += cpu.carry_b() as Word;
+    sum += cpu.get_flag(Flag::C) as Word;
     cpu.set_a(sum as u8 & 0xFF);
     a_flags_z_n(cpu);
     //set carry
-    cpu.set_flag_value(FlagIndex::C, (sum  > 0xFF) as u8);
+    cpu.set_flag(Flag::C, (sum  > 0xFF) as u8);
     //set overvlow
     let v = check_overflow_pre(cpu.a(), operand, eq_signed_bits);
-    cpu.set_flag_value(FlagIndex::O, v as u8);
+    cpu.set_flag(Flag::V, v as u8);
 }
 
 
@@ -48,7 +53,7 @@ pub fn and(cpu: &mut Six502, addr: Word) {
 }
 
 pub fn asl(cpu: &mut Six502, operand: Byte) -> Byte {
-    cpu.set_flag_value(FlagIndex::C, operand & FlagBits::N as u8);
+    cpu.set_flag(Flag::C, operand & Flag::N);
     let result = operand << 1;
     cpu.clock();
     flags_z_n(cpu, result);

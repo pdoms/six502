@@ -1,6 +1,6 @@
 use crate::{
     cpu::{Register, Six502, Word}, 
-    flags::{FlagIndex, Flags}, 
+    flags::{set_flag, Flag, DEFAULT_STATUS}, 
     internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 
@@ -16,8 +16,7 @@ fn imm() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 #[test]
 fn zp0() {
@@ -33,8 +32,9 @@ fn zp0() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[FlagIndex::N]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    let mut status = DEFAULT_STATUS;
+    set_flag(&mut status, Flag::N, 1);
+    cpu.assert_state(pc, sp, a, x, y, cycles, status);
 }
 
 #[test]
@@ -53,8 +53,7 @@ fn zpx() {
     let x = 0x0F;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 
     let mem2 = &[OpCode::LdaZpx as u8, 0x80, OpCode::Nop as u8];
     let mut cpu2 = Six502::new();
@@ -69,8 +68,7 @@ fn zpx() {
     let x = 0xFF;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu2.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu2.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test]
@@ -88,8 +86,7 @@ fn abs() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test]
@@ -108,8 +105,7 @@ fn abx() {
     let x = 0x92;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test]
@@ -128,8 +124,9 @@ fn aby() {
     let x = 0;
     let y = 0x92;
     let cycles = 0;
-    let flags = Flags::fix_state(&[FlagIndex::N]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    let mut status = DEFAULT_STATUS;
+    set_flag(&mut status, Flag::N, 1);
+    cpu.assert_state(pc, sp, a, x, y, cycles, status);
 }
 
 #[test]
@@ -150,8 +147,7 @@ fn izx() {
     let x = 0x04;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test]
@@ -172,8 +168,7 @@ fn izy() {
     let x = 0;
     let y = 0x04;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test]

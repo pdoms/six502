@@ -1,4 +1,4 @@
-use crate::{cpu::Six502, flags::{FlagIndex, Flags}, internal::opcodes::OpCode};
+use crate::{cpu::Six502, flags::{set_flag, Flag, DEFAULT_STATUS}, internal::opcodes::OpCode};
 
 
 
@@ -13,7 +13,7 @@ fn bcc_branch_forward() {
     let mut cpu = Six502::new();
     cpu.set_pc(0xFFF);
     cpu.load_to_pc(mem);
-    cpu.set_flag_value(FlagIndex::C, 0);
+    cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0x1015 + 2;
     let sp = 0;
@@ -21,8 +21,7 @@ fn bcc_branch_forward() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test]
@@ -36,7 +35,7 @@ fn bcc_branch_backward() {
     let mut cpu = Six502::new();
     cpu.set_pc(0xFFF);
     cpu.load_to_pc(mem);
-    cpu.set_flag_value(FlagIndex::C, 0);
+    cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0xFFF + 2 - 18;
     let sp = 0;
@@ -44,8 +43,7 @@ fn bcc_branch_backward() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 #[test]
 fn bcc_no_branch() {
@@ -58,7 +56,7 @@ fn bcc_no_branch() {
     let mut cpu = Six502::new();
     cpu.set_pc(0xFFF);
     cpu.load_to_pc(mem);
-    cpu.set_flag_value(FlagIndex::C, 1);
+    cpu.set_flag(Flag::C, 1);
     cpu.execute();
     let pc = 0xFFF+2;
     let sp = 0;
@@ -66,8 +64,9 @@ fn bcc_no_branch() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[FlagIndex::C]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    let mut status = DEFAULT_STATUS;
+    set_flag(&mut status, Flag::C, 1);
+    cpu.assert_state(pc, sp, a, x, y, cycles, status);
 }
 
 
@@ -82,7 +81,8 @@ fn bcs_branch() {
     let mut cpu = Six502::new();
     cpu.set_pc(0xFFF);
     cpu.load_to_pc(mem);
-    cpu.set_flag_value(FlagIndex::C, 1);
+    cpu.set_flag(Flag::C, 1);
+
     cpu.execute();
     let pc = 0x1015 + 2;
     let sp = 0;
@@ -90,8 +90,9 @@ fn bcs_branch() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[FlagIndex::C]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    let mut status = DEFAULT_STATUS;
+    set_flag(&mut status, Flag::C, 1);
+    cpu.assert_state(pc, sp, a, x, y, cycles, status);
 }
 
 #[test]
@@ -105,7 +106,7 @@ fn bcs_no_branch() {
     let mut cpu = Six502::new();
     cpu.set_pc(0xFFF);
     cpu.load_to_pc(mem);
-    cpu.set_flag_value(FlagIndex::C, 0);
+    cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0xFFF+2;
     let sp = 0;
@@ -113,6 +114,5 @@ fn bcs_no_branch() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }

@@ -1,4 +1,4 @@
-use crate::{flags::{FlagIndex, Flags}, internal::{Instructions, opcodes::OpCode}, log::Log, mem::Mem
+use crate::{flags::{Flag::{self}, Flag6502, DEFAULT_STATUS}, internal::{opcodes::OpCode, Instructions}, log::Log, mem::Mem
 };
 
 pub type Byte = u8;
@@ -19,7 +19,7 @@ pub struct Six502 {
     a: Byte,
     x: Byte,
     y: Byte,
-    flags: Flags,
+    status: Byte,
     mem: Mem,
     //this will hold the current state of cycles
     cycles: i64,
@@ -36,7 +36,7 @@ impl Six502 {
             a: 0,
             x: 0,
             y: 0,
-            flags: Flags::new(),
+            status: DEFAULT_STATUS,
             mem: Mem::init(),
             cycles: 0,
             instructions: Instructions::init(),
@@ -57,7 +57,7 @@ impl Six502 {
         //    SP to 0xFF
         self.sp = 0xFF;
         //    all flags to zero
-        self.flags.reset();
+        self.status = DEFAULT_STATUS;
         //    all registers to zero
         self.a = 0;
         self.x = 0;
@@ -83,28 +83,21 @@ impl Six502 {
         self.cycles = c;
     }
 
-    pub(crate) fn set_flag_value(&mut self, flag: FlagIndex, value: Byte) {
-        match flag {
-            FlagIndex::Z => self.flags.set_zero(value),
-            FlagIndex::N => self.flags.set_neg(value),
-            FlagIndex::C => self.flags.set_carry(value),
-            FlagIndex::O => self.flags.set_overflow(value),
-            _ => {
-                panic!("Unhandled flag: set_flag_value(): {flag:?}")
-            }
+    #[inline]
+    pub(crate) fn set_flag(&mut self, flag: Flag6502, v: u8) {
+        if v > 0 {
+            self.status |= flag as Byte;
+        } else {
+            self.status &= !(flag as Byte)
         }
     }
 
-    
-    
-    pub(crate) fn carry_b(&self) -> u8 {
-        self.flags.carry_b()
+    #[inline]
+    pub(crate) fn get_flag(&self, flag: Flag6502) -> Byte {
+        if (self.status & flag as u8) > 0 {1} else {0} 
     }
 
-    pub(crate) fn c(&self) -> bool {
-        self.flags.carry()
-    }
-    
+
     #[inline]
     pub(crate) fn set_a(&mut self, b: Byte) {
         self.log.info(format!("Setting register: A to {b:#02x}").as_str());
@@ -141,6 +134,11 @@ impl Six502 {
     pub(crate) fn pc(&self) -> Word {
         self.pc
     }
+    
+    #[inline]
+    pub(crate) fn status(&self) -> Byte {
+        self.status
+    }
 
     #[inline]
     pub (crate) fn pc_mut(&mut self) -> &mut Word {
@@ -153,7 +151,7 @@ impl Six502 {
 
     pub fn instruction(&mut self) -> bool {
         let opcode = self.mem[self.pc];
-        self.log.info(format!("Read instruciton '{:?}' from mem[{:#02x}]", OpCode::from(opcode), self.pc).as_str());
+        self.log.info(format!("Read instruction '{:?}' from mem[{:#02x}]", OpCode::from(opcode), self.pc).as_str());
 
         self.pc += 1;
         let instr = &self.instructions[opcode];
@@ -295,7 +293,7 @@ impl Six502 {
         x: Byte, 
         y: Byte, 
         cycles: i64,
-        flags: Flags) {
+        status: Byte) {
         if self.pc != pc {
             panic!("[Six502.pc] assertion failed. Is {}, but expected: {}", self.pc, pc);
         };
@@ -315,8 +313,8 @@ impl Six502 {
         if self.cycles != cycles {
             panic!("[Six502.cycles] assertion failed. Is {}, but expected: {}", self.cycles, cycles);
         }
-        if self.flags != flags {
-            panic!("[Six502.flags] assertion failed. Is {:?}, but expected: {:?}", self.flags, flags);
+        if self.status != status {
+            panic!("[Six502.flags] assertion failed. Is {:08b}, but expected: {:08b}", self.status, status);
         }
     }
 }
@@ -329,7 +327,13 @@ impl std::fmt::Debug for Six502 {
            f.write_fmt(format_args!("   x: {}\n", self.x))?;
            f.write_fmt(format_args!("   y: {}\n", self.y))?;
            f.write_fmt(format_args!("   cycles: {}\n", self.cycles))?;
-           f.write_fmt(format_args!("   flags: {:?}\n", self.flags))?;
+           f.write_fmt(format_args!("   C: {}\n", self.get_flag(Flag::C)))?;
+           f.write_fmt(format_args!("   Z: {}\n", self.get_flag(Flag::Z)))?;
+           f.write_fmt(format_args!("   I: {}\n", self.get_flag(Flag::I)))?;
+           f.write_fmt(format_args!("   D: {}\n", self.get_flag(Flag::D)))?;
+           f.write_fmt(format_args!("   B: {}\n", self.get_flag(Flag::B)))?;
+           f.write_fmt(format_args!("   V: {}\n", self.get_flag(Flag::V)))?;
+           f.write_fmt(format_args!("   N: {}\n", self.get_flag(Flag::N)))?;
            f.write_str("<<\n")
     }
 }

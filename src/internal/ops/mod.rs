@@ -4,6 +4,7 @@ pub(crate) mod and;
 pub(crate) mod asl;
 pub(crate) mod bcc;
 pub(crate) mod bcs;
+pub(crate) mod bit;
 pub(crate) mod lda;
 
 

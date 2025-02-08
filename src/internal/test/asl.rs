@@ -1,4 +1,5 @@
-use crate::{cpu::{Register, Six502, Word}, flags::{FlagIndex, Flags}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
+use crate::{cpu::{Register, Six502, Word}, 
+    flags:: DEFAULT_STATUS, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
 
 #[test]
 fn acc() {
@@ -14,8 +15,7 @@ fn acc() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 }
 
 #[test] 
@@ -34,8 +34,7 @@ fn zp0() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
     assert_eq!(cpu.byte_at(0x01), 0x1C);
 }
 
@@ -56,8 +55,7 @@ fn zpx() {
     let x = 0x0F;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
     assert_eq!(cpu.byte_at(0x8F), 0xA);
 }
 
@@ -81,8 +79,7 @@ fn abs() {
     let x = 0;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
     assert_eq!(cpu.byte_at(0x1111), 0xA);
 }
 
@@ -106,8 +103,7 @@ fn abx() {
     let x = 0x92;
     let y = 0;
     let cycles = 0;
-    let flags = Flags::fix_state(&[]);
-    cpu.assert_state(pc, sp, a, x, y, cycles, flags);
+    cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
     assert_eq!(cpu.byte_at(0x3092), 0x1C);
 }
 
