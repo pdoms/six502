@@ -1,6 +1,8 @@
-use crate::{cpu::{Six502, SP_INIT}, flags::{set_flag, Flag, DEFAULT_STATUS}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
+use crate::{cpu::{Six502, Word, SP_INIT}, flags::{set_flag, Flag, DEFAULT_STATUS}, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}, mem::Mem};
 
+use super::prelude;
 
+const PC_START: Word = 0xFFF;
 
 #[test]
 fn bcc_branch_forward() {
@@ -10,9 +12,7 @@ fn bcc_branch_forward() {
         label, 
         OpCode::Nop.into()
     ];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0x1015 + 2;
@@ -32,9 +32,7 @@ fn bcc_branch_backward() {
         label, 
         OpCode::Nop.into()
     ];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0xFFF + 2 - 18;
@@ -54,9 +52,7 @@ fn bcc_no_branch() {
         label, 
         OpCode::Nop.into()
     ];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_flag(Flag::C, 1);
     cpu.execute();
     let pc = 0xFFF+2;
@@ -79,9 +75,7 @@ fn bcs_branch() {
         label, 
         OpCode::Nop.into()
     ];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_flag(Flag::C, 1);
 
     cpu.execute();
@@ -104,9 +98,7 @@ fn bcs_no_branch() {
         label, 
         OpCode::Nop.into()
     ];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_flag(Flag::C, 0);
     cpu.execute();
     let pc = 0xFFF+2;
@@ -120,7 +112,7 @@ fn bcs_no_branch() {
 
 #[test]
 fn instr_correct_spots() {
-    let instructions = Instructions::init();
+    let instructions: Instructions<Mem> = Instructions::init();
     assert_eq!(instructions[0x90].mnemonic, "BCC"); 
     assert_eq!(instructions[0x90].mode, AddressingMode::REL);
     assert_eq!(instructions[0xB0].mnemonic, "BCS"); 

@@ -1,6 +1,6 @@
-use crate::{cpu::Six502, flags::Flag, internal::ops::common::branch_if};
+use crate::{data::DataBus, cpu::Six502, flags::Flag, internal::ops::common::branch_if};
 
-pub fn rel(cpu: &mut Six502) -> bool {
+pub fn rel<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let c_flag = cpu.get_flag(Flag::C);
     println!("c flag: {c_flag}");
     let remaining_cycles = branch_if(cpu, c_flag, 1);

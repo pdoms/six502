@@ -8,15 +8,16 @@ use crate::{
         set_flag, 
         Flag, 
         DEFAULT_STATUS}, 
-    internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
+    internal::{modes::AddressingMode, opcodes::OpCode, Instructions}, mem::Mem};
+
+use super::prelude;
 
 #[test]
 fn imm() {
     let bytes = 2+2;
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcImm.into(), 0x02, OpCode::Nop.into()];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let pc_init = 0xFFF;
+    let mut cpu = prelude(pc_init, mem);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
     let sp = SP_INIT;
@@ -28,9 +29,8 @@ fn imm() {
 
     //ending with carry bit set
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcImm.into(), 0xFF, OpCode::Nop.into()];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let pc_init = 0xFFF;
+    let mut cpu = prelude(pc_init, mem);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
     let sp = SP_INIT;
@@ -43,9 +43,8 @@ fn imm() {
     cpu.assert_state(pc, sp, a, x, y, cycles, status);
 
     let mem = &[OpCode::LdaImm.into(), 0x40, OpCode::AdcImm.into(), 0x40, OpCode::Nop.into()];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let pc_init = 0xFFF;
+    let mut cpu = prelude(pc_init, mem);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
     let sp = SP_INIT;
@@ -64,9 +63,8 @@ fn zp0() {
     let zp_addr = 0x01;
     let bytes = 2+2;
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcZp0.into(), zp_addr, OpCode::Nop.into()];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let pc_init = 0xFFF;
+    let mut cpu = prelude(pc_init, mem);
     cpu.set_byte_at(zp_addr as Word, 0x40);
     cpu.execute();
     let pc = 0xFFF+bytes+1;
@@ -83,9 +81,8 @@ fn zp0() {
 fn zpx() {
     let bytes_per_instr = 2+2;
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcZpx.into(), 0x80, OpCode::Nop.into()];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let pc_init = 0xFFF;
+    let mut cpu = prelude(pc_init, mem);
     cpu.set_reg_byte(Register::X, 0x0F);
     cpu.set_byte_at(0x8F, 0x02);
     cpu.execute();
@@ -107,9 +104,7 @@ fn abs() {
 
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcAbs.into(), 0x11, 0x11, OpCode::Nop.into()];
 
-    let mut cpu = Six502::new();
-    cpu.set_pc(start);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(start, mem);
     cpu.set_byte_at(0x1111, 0x02);
 
     cpu.execute();
@@ -129,9 +124,7 @@ fn abx() {
 
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcAbx.into(), 0x00, 0x30, OpCode::Nop.into()];
 
-    let mut cpu = Six502::new();
-    cpu.set_pc(start);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(start, mem);
     cpu.set_reg_byte(crate::cpu::Register::X, 0x92);
     cpu.set_byte_at(0x3092, 0xFF);
     cpu.execute();
@@ -153,9 +146,7 @@ fn aby() {
     let start = 0xFFF;
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcAby.into(), 0x00, 0x30, OpCode::Nop.into()];
 
-    let mut cpu = Six502::new();
-    cpu.set_pc(start);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(start, mem);
     cpu.set_reg_byte(crate::cpu::Register::Y, 0x92);
     cpu.set_byte_at(0x3092, 0xFF);
     cpu.execute();
@@ -178,9 +169,7 @@ fn izx() {
 
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcIzx.into(), 0x40, OpCode::Nop.into()];
 
-    let mut cpu = Six502::new();
-    cpu.set_pc(start);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(start, mem);
     cpu.set_reg_byte(crate::cpu::Register::X, 0x04);
     cpu.set_byte_at(0x44, 0x01);
     cpu.set_byte_at(0x45, 0x02);
@@ -203,9 +192,7 @@ fn izy() {
 
     let mem = &[OpCode::LdaImm.into(), 0x02, OpCode::AdcIzy.into(), 0x40, OpCode::Nop.into()];
 
-    let mut cpu = Six502::new();
-    cpu.set_pc(start);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(start, mem);
     cpu.set_reg_byte(crate::cpu::Register::Y, 0x04);
     cpu.set_byte_at(0x40, 0x01);
     cpu.set_byte_at(0x41, 0x02);
@@ -226,7 +213,7 @@ fn izy() {
 
 #[test]
 fn instr_correct_spots() {
-    let instructions = Instructions::init();
+    let instructions: Instructions<Mem> = Instructions::init();
     assert_eq!(instructions[0x61].mnemonic, "ADC");
     assert_eq!(instructions[0x61].mode, AddressingMode::IZX);
     assert_eq!(instructions[0x65].mnemonic, "ADC");

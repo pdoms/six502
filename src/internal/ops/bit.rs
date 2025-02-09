@@ -1,6 +1,6 @@
-use crate::{cpu::{Six502, Word}, flags::Flag};
+use crate::{data::DataBus, cpu::{Six502, Word}, flags::Flag};
 
-pub fn zp0(cpu: &mut Six502) -> bool {
+pub fn zp0<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let addr = cpu.zp0();
     let byte = cpu.read_byte(addr as Word);
     let tmp = byte & cpu.a();
@@ -11,7 +11,7 @@ pub fn zp0(cpu: &mut Six502) -> bool {
     return true;
 }
 
-pub fn abs(cpu: &mut Six502) -> bool {
+pub fn abs<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let addr = cpu.abs();
     let byte = cpu.read_byte(addr);
     let tmp = byte & cpu.a();

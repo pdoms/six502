@@ -1,13 +1,13 @@
-use crate::cpu::Six502;
+use crate::{cpu::Six502, data::DataBus};
 
 use super::modes::AddressingMode;
 
-pub struct InstrCode {
+pub struct InstrCode<D: DataBus> {
     pub mnemonic: &'static str,
     pub opcode: u8,
     pub mode: AddressingMode,
     pub cycles: u8,
-    pub exec_fn: fn(&mut Six502) -> bool 
+    pub exec_fn: fn(&mut Six502<D>) -> bool 
 }
 
 

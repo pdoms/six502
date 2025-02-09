@@ -1,11 +1,11 @@
+use crate::data::DataBus;
 use crate::instr;
-
 use super::ops::{adc, and, asl, bcc, bcs, bit, brk, lda};
 use super::{modes::AddressingMode as am, instruction::InstrCode, TABLE_COLS};
 use super::ops::common::nop;
 
 #[inline]
-pub fn row_0() -> [InstrCode; TABLE_COLS] {
+pub fn row_0<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(0,0, "BRK", am::IMP, 7, brk::imp), 
         instr!(0,1, "XXX", am::IMM, 1, nop),
@@ -26,7 +26,7 @@ pub fn row_0() -> [InstrCode; TABLE_COLS] {
     ]
 }
 #[inline]
-pub fn row_1() -> [InstrCode; TABLE_COLS] {
+pub fn row_1<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(1,0, "XXX", am::IMM, 1, nop), 
         instr!(1,1, "XXX", am::IMM, 5, nop), 
@@ -48,7 +48,7 @@ pub fn row_1() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_2() -> [InstrCode; TABLE_COLS] {
+pub fn row_2<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(2,0, "XXX", am::IMM, 1, nop), 
         instr!(2,1, "AND", am::IZX, 6, and::izx), 
@@ -70,7 +70,7 @@ pub fn row_2() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_3() -> [InstrCode; TABLE_COLS] {
+pub fn row_3<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(3,0, "XXX", am::IMM, 1, nop), 
         instr!(3,1, "AND", am::IZY, 6, and::izy), 
@@ -93,7 +93,7 @@ pub fn row_3() -> [InstrCode; TABLE_COLS] {
 
 
 #[inline]
-pub fn row_4() -> [InstrCode; TABLE_COLS] {
+pub fn row_4<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(4,0, "XXX", am::IMM, 1, nop), 
         instr!(4,1, "XXX", am::IMM, 1, nop), 
@@ -116,7 +116,7 @@ pub fn row_4() -> [InstrCode; TABLE_COLS] {
 
 
 #[inline]
-pub fn row_5() -> [InstrCode; TABLE_COLS] {
+pub fn row_5<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(5,0, "XXX", am::IMM, 1, nop), 
         instr!(5,1, "XXX", am::IMM, 1, nop), 
@@ -138,7 +138,7 @@ pub fn row_5() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_6() -> [InstrCode; TABLE_COLS] {
+pub fn row_6<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(6,0, "XXX", am::IMM, 1, nop), 
         instr!(6,1, "ADC", am::IZX, 6, adc::izx), 
@@ -160,7 +160,7 @@ pub fn row_6() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_7() -> [InstrCode; TABLE_COLS] {
+pub fn row_7<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(7,0, "XXX", am::IMM, 1, nop), 
         instr!(7,1, "ADC", am::IZY, 6, adc::izy), 
@@ -182,7 +182,7 @@ pub fn row_7() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_8() -> [InstrCode; TABLE_COLS] {
+pub fn row_8<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(8,0, "XXX", am::IMM, 1, nop), 
         instr!(8,1, "XXX", am::IMM, 1, nop), 
@@ -204,7 +204,7 @@ pub fn row_8() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_9() -> [InstrCode; TABLE_COLS] {
+pub fn row_9<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(9,0, "BCC", am::REL, 4, bcc::rel), 
         instr!(9,1, "XXX", am::IMP, 1, nop), 
@@ -226,7 +226,7 @@ pub fn row_9() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_10() -> [InstrCode; TABLE_COLS] {
+pub fn row_10<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(10,0, "XXX", am::IMM, 1, nop), 
         instr!(10,1, "LDA", am::IZX, 6, lda::izx), 
@@ -248,7 +248,7 @@ pub fn row_10() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_11() -> [InstrCode; TABLE_COLS] {
+pub fn row_11<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(11,0, "BCS", am::REL, 4, bcs::rel), 
         instr!(11,1, "LDA", am::IZY, 6, lda::izy), 
@@ -270,7 +270,7 @@ pub fn row_11() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_12() -> [InstrCode; TABLE_COLS] {
+pub fn row_12<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(12,0, "XXX", am::IMM, 1, nop), 
         instr!(12,1, "XXX", am::IMM, 1, nop), 
@@ -292,7 +292,7 @@ pub fn row_12() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_13() -> [InstrCode; TABLE_COLS] {
+pub fn row_13<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(13,0, "XXX", am::IMM, 1, nop), 
         instr!(13,1, "XXX", am::IMM, 1, nop), 
@@ -314,7 +314,7 @@ pub fn row_13() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_14() -> [InstrCode; TABLE_COLS] {
+pub fn row_14<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(14,0, "XXX", am::IMM, 1, nop), 
         instr!(14,1, "XXX", am::IMM, 1, nop), 
@@ -336,7 +336,7 @@ pub fn row_14() -> [InstrCode; TABLE_COLS] {
 }
 
 #[inline]
-pub fn row_15() -> [InstrCode; TABLE_COLS] {
+pub fn row_15<D: DataBus>() -> [InstrCode<D>; TABLE_COLS] {
     [
         instr!(15,0, "XXX", am::IMM, 1, nop), 
         instr!(15,1, "XXX", am::IMM, 1, nop), 

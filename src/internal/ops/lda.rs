@@ -5,10 +5,10 @@
 //############### ######  ####   #    #  ###############
 //######################################################
 
-use crate::{cpu::{Six502, Word}, internal::ops::common::a_flags_z_n};
+use crate::{cpu::{Six502, Word}, data::DataBus, internal::ops::common::a_flags_z_n};
 
 
-pub fn imm(cpu: &mut Six502) -> bool {
+pub fn imm<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let b = cpu.imm();
     cpu.set_a(b);
     a_flags_z_n(cpu);
@@ -16,7 +16,7 @@ pub fn imm(cpu: &mut Six502) -> bool {
     return true;
 }
 
-pub fn zp0(cpu: &mut Six502) -> bool {
+pub fn zp0<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let addr = cpu.zp0();
     cpu.load_a(addr as Word);
     a_flags_z_n(cpu);
@@ -24,7 +24,7 @@ pub fn zp0(cpu: &mut Six502) -> bool {
     return true;
 }
 
-pub fn zpx(cpu: &mut Six502) -> bool {
+pub fn zpx<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let addr = cpu.zpx();
     cpu.load_a(addr);
     a_flags_z_n(cpu);
@@ -32,7 +32,7 @@ pub fn zpx(cpu: &mut Six502) -> bool {
     return true;
 }
 
-pub fn abs(cpu: &mut Six502) -> bool {
+pub fn abs<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let addr = cpu.abs();
     cpu.load_a(addr);
     a_flags_z_n(cpu);
@@ -40,7 +40,7 @@ pub fn abs(cpu: &mut Six502) -> bool {
     return true;
 } 
 
-pub fn abx(cpu: &mut Six502) -> bool {
+pub fn abx<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let mut abs_addr_x = 0;
     let cross = cpu.abx(&mut abs_addr_x);
     cpu.load_a(abs_addr_x);
@@ -56,7 +56,7 @@ pub fn abx(cpu: &mut Six502) -> bool {
     return true;
 }
 
-pub fn aby(cpu: &mut Six502) -> bool {
+pub fn aby<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let mut abs_addr_y = 0;
     let cross = cpu.aby(&mut abs_addr_y);
     cpu.load_a(abs_addr_y);
@@ -72,7 +72,7 @@ pub fn aby(cpu: &mut Six502) -> bool {
     return true;
 }
 
-pub fn izx(cpu: &mut Six502) -> bool {
+pub fn izx<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let effective_addr = cpu.izx();
     cpu.load_a(effective_addr);
     a_flags_z_n(cpu);
@@ -80,7 +80,7 @@ pub fn izx(cpu: &mut Six502) -> bool {
     return true;
 
 }
-pub fn izy(cpu: &mut Six502) -> bool {
+pub fn izy<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     let mut effective_addr_y = 0;
     let cross = cpu.izy(&mut effective_addr_y);
     cpu.load_a(effective_addr_y);

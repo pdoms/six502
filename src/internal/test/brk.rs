@@ -1,11 +1,12 @@
-use crate::{cpu::{Six502, SP_INIT}, flags::DEFAULT_STATUS, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
+use crate::{cpu::{Six502, SP_INIT}, flags::DEFAULT_STATUS, internal::{modes::AddressingMode, opcodes::OpCode, Instructions}, mem::Mem};
+
+use super::prelude;
 
 #[test]
 fn imp() {
     let mem = &[OpCode::BrkImp.into(), 0x01];
-    let mut cpu = Six502::new();
+    let mut cpu = prelude(0x1111, mem);
     cpu.set_pc(0x1111);
-    cpu.load_to_pc(mem);
     cpu.set_byte_at(0xFFFE, 0x11);
     cpu.set_byte_at(0xFFFF, 0x12);
     cpu.set_byte_at(0x1211, OpCode::Nop.into());
@@ -22,7 +23,7 @@ fn imp() {
 
 #[test]
 fn instr_correct_spots() {
-    let instructions = Instructions::init();
+    let instructions: Instructions<Mem> = Instructions::init();
     assert_eq!(instructions[0x00].mnemonic, "BRK"); 
     assert_eq!(instructions[0x00].mode, AddressingMode::IMP);
 }

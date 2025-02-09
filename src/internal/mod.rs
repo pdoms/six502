@@ -11,16 +11,18 @@ use std::ops::{Index, IndexMut};
 
 use instruction::InstrCode;
 
+use crate::data::DataBus;
+
 pub(crate) const TABLE_COLS: usize = 16;
 pub(crate) const TABLE_ROWS: usize = 16;
 
-pub struct Instructions {
+pub struct Instructions<D: DataBus> {
     //COLS;ROWS
-    inner: [[InstrCode; TABLE_COLS]; TABLE_ROWS],
+    inner: [[InstrCode<D>; TABLE_COLS]; TABLE_ROWS],
 }
 
-impl Index<u8> for Instructions {
-    type Output = InstrCode;
+impl<D: DataBus> Index<u8> for Instructions<D> {
+    type Output = InstrCode<D>;
 
     fn index(&self, index: u8) -> &Self::Output {
         let row = index >> 4; 
@@ -29,7 +31,7 @@ impl Index<u8> for Instructions {
     }
 }
 
-impl IndexMut<u8> for Instructions {
+impl<D: DataBus> IndexMut<u8> for Instructions<D> {
     fn index_mut(&mut self, index: u8) -> &mut Self::Output {
         let row = index >> 4; 
         let col = index  & 0xF; 
@@ -38,7 +40,7 @@ impl IndexMut<u8> for Instructions {
 }
 
 
-impl Instructions {
+impl<D: DataBus> Instructions<D> {
     pub fn init() -> Self {
         Self {
             inner: [

@@ -1,6 +1,6 @@
-use crate::{cpu::{Byte, Six502, Word, INERRUPT_VECTOR}, flags::Flag};
+use crate::{data::DataBus, cpu::{Byte, Six502, INERRUPT_VECTOR}, flags::Flag};
 
-pub fn imp(cpu: &mut Six502) -> bool {
+pub fn imp<D: DataBus>(cpu: &mut Six502<D>) -> bool {
     
     *cpu.pc_mut() += 1;
     println!("{}", cpu.pc());

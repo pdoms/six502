@@ -1,4 +1,5 @@
 use crate::{
+    data::DataBus,
     common::{
         check_overflow_pre, eq_sign_bits, page_x_word}, 
     cpu::{
@@ -13,24 +14,24 @@ use crate::{
 /// easier to read the code as it keeps it all together and b) likely to get optimised 
 /// out as well.
 
-pub fn nop(_cpu: &mut Six502) -> bool {
+pub fn nop<D: DataBus>(_cpu: &mut Six502<D>) -> bool {
     false
 }
 
-pub fn a_flags_z_n(cpu: &mut Six502) {
+pub fn a_flags_z_n<D: DataBus>(cpu: &mut Six502<D>) {
     let a = cpu.a();
     cpu.set_flag(Flag::Z, (a == 0) as u8);
     cpu.set_flag(Flag::N, a & 0x80);
 }
 
-pub fn flags_z_n(cpu: &mut Six502, result: Byte) {
+pub fn flags_z_n<D: DataBus>(cpu: &mut Six502<D>, result: Byte) {
     cpu.set_flag(Flag::Z, (result == 0) as u8);
     cpu.set_flag(Flag::N, result & 0x80);
 }
 
 
 //Arithmetic Chip Functions
-pub fn adc(cpu: &mut Six502, operand: Byte) {
+pub fn adc<D: DataBus>(cpu: &mut Six502<D>, operand: Byte) {
     let eq_signed_bits: bool = eq_sign_bits(cpu.a(), operand); 
     let mut sum = cpu.a() as Word;
     sum += operand as Word;
@@ -45,14 +46,14 @@ pub fn adc(cpu: &mut Six502, operand: Byte) {
 }
 
 
-pub fn and(cpu: &mut Six502, addr: Word) {
+pub fn and<D: DataBus>(cpu: &mut Six502<D>, addr: Word) {
     let b = cpu.read_byte(addr);
     let a = cpu.a_mut();
     *a &= b;
     a_flags_z_n(cpu);
 }
 
-pub fn asl(cpu: &mut Six502, operand: Byte) -> Byte {
+pub fn asl<D: DataBus>(cpu: &mut Six502<D>, operand: Byte) -> Byte {
     cpu.set_flag(Flag::C, operand & Flag::N);
     let result = operand << 1;
     cpu.clock();
@@ -61,7 +62,7 @@ pub fn asl(cpu: &mut Six502, operand: Byte) -> Byte {
 }
 
 /// returns how many cycles should be left
-pub fn branch_if(cpu: &mut Six502, test: u8, exp: u8) -> i64 {
+pub fn branch_if<D: DataBus>(cpu: &mut Six502<D>, test: u8, exp: u8) -> i64 {
     let mut offset = cpu.fetch_byte() as Word;
     if (offset & 0x80) > 0 {
         offset |= 0xFF00;

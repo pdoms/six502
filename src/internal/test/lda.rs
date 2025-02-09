@@ -1,16 +1,18 @@
 use crate::{
-    cpu::{Register, Six502, Word, SP_INIT}, 
+    cpu::{Register, Word, SP_INIT}, 
     flags::{set_flag, Flag, DEFAULT_STATUS}, 
-    internal::{modes::AddressingMode, opcodes::OpCode, Instructions}};
+    internal::{modes::AddressingMode, opcodes::OpCode, Instructions}, mem::Mem};
 
+use super::prelude;
+
+const PC_START: Word = 0xFFF;
 
 #[test]
 fn imm() {
     let mem = &[OpCode::LdaImm as u8, 0x22, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.execute();
-    let pc = 65535;
+    let pc = PC_START+3;
     let sp = SP_INIT;
     let a = 34;
     let x = 0;
@@ -22,11 +24,10 @@ fn imm() {
 fn zp0() {
     let zp_addr = 0x01;
     let mem = &[OpCode::LdaZp0 as u8, zp_addr, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_byte_at(zp_addr as Word, 0xF1);
     cpu.execute();
-    let pc = 65535;
+    let pc = PC_START + 3;
     let sp = SP_INIT;
     let a = 241;
     let x = 0;
@@ -41,13 +42,11 @@ fn zp0() {
 fn zpx() {
     let bytes_per_instr = 2;
     let mem = &[OpCode::LdaZpx as u8, 0x80, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_reg_byte(Register::X, 0x0F);
     cpu.set_byte_at(0x8F, 0x22);
     cpu.execute();
-    let pc = 0xFFF+bytes_per_instr+1;
+    let pc = PC_START+bytes_per_instr+1;
     let sp = SP_INIT;
     let a = 34;
     let x = 0x0F;
@@ -56,9 +55,7 @@ fn zpx() {
     cpu.assert_state(pc, sp, a, x, y, cycles, DEFAULT_STATUS);
 
     let mem2 = &[OpCode::LdaZpx as u8, 0x80, OpCode::Nop as u8];
-    let mut cpu2 = Six502::new();
-    cpu2.set_pc(0xFFF);
-    cpu2.load_to_pc(mem2);
+    let mut cpu2 = prelude(PC_START, mem);
     cpu2.set_reg_byte(Register::X, 0xFF);
     cpu2.set_byte_at(0x7F, 0x22);
     cpu2.execute();
@@ -75,9 +72,7 @@ fn zpx() {
 fn abs() {
     let bytes_per_instr = 3;
     let mem = &[OpCode::LdaAbs as u8, 0x11, 0xAA, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_byte_at(0xAA11, 0x01);
     cpu.execute();
     let pc = 0xFFF+bytes_per_instr+1;
@@ -93,9 +88,7 @@ fn abs() {
 fn abx() {
     let bytes_per_instr = 3;
     let mem = &[OpCode::LdaAbx as u8, 0x00, 0x20, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_reg_byte(Register::X, 0x92);
     cpu.set_byte_at(0x2092, 0x22);
     cpu.execute();
@@ -112,9 +105,7 @@ fn abx() {
 fn aby() {
     let bytes_per_instr = 3;
     let mem = &[OpCode::LdaAby as u8, 0x00, 0x20, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_reg_byte(Register::Y, 0x92);
     cpu.set_byte_at(0x2092, 0xF1);
     cpu.execute();
@@ -133,9 +124,7 @@ fn aby() {
 fn izx() {
     let bytes_per_instr = 2;
     let mem = &[OpCode::LdaIzx as u8, 0x40, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_reg_byte(Register::X, 0x04);
     cpu.set_byte_at(0x44, 0x01);
     cpu.set_byte_at(0x45, 0x02);
@@ -154,9 +143,7 @@ fn izx() {
 fn izy() {
     let bytes_per_instr = 2;
     let mem = &[OpCode::LdaIzy as u8, 0x40, OpCode::Nop as u8];
-    let mut cpu = Six502::new();
-    cpu.set_pc(0xFFF);
-    cpu.load_to_pc(mem);
+    let mut cpu = prelude(PC_START, mem);
     cpu.set_reg_byte(Register::Y, 0x04);
     cpu.set_byte_at(0x40, 0x01);
     cpu.set_byte_at(0x41, 0x02);
@@ -173,7 +160,7 @@ fn izy() {
 
 #[test]
 fn instr_correct_spots() {
-    let instructions = Instructions::init();
+    let instructions: Instructions<Mem> = Instructions::init();
     assert_eq!(instructions[0xA5].mnemonic, "LDA");
     assert_eq!(instructions[0xA5].mode, AddressingMode::ZP0);
     assert_eq!(instructions[0xA9].mnemonic, "LDA");

@@ -1,4 +1,6 @@
-use crate::{flags::{flag_debug, Flag::{self}, Flag6502, DEFAULT_STATUS}, internal::{opcodes::OpCode, Instructions}, log::{self, Log}, mem::Mem
+use std::{cell::{Cell, RefCell}, mem::MaybeUninit, rc::Rc};
+
+use crate::{data::DataBus, flags::{flag_debug, Flag::{self}, Flag6502, DEFAULT_STATUS}, internal::{opcodes::OpCode, Instructions}, log::{Log}
 };
 
 pub type Byte = u8;
@@ -18,22 +20,22 @@ pub enum Register {
     SP
 }
 
-pub struct Six502 {
+pub struct Six502<D: DataBus> {
     pc: Word,
     sp: Byte,
     a: Byte,
     x: Byte,
     y: Byte,
     status: Byte,
-    mem: Mem,
     //this will hold the current state of cycles
     cycles: i64,
-    instructions: Instructions,
+    instructions: Instructions<D>,
     log: Log,
+    bus: Rc<RefCell<D>>
 
 }
 
-impl Six502 {
+impl<D: DataBus> Six502<D> {
     pub fn new() -> Self {
         Self {
             pc: 0xFFFC,
@@ -42,16 +44,14 @@ impl Six502 {
             x: 0,
             y: 0,
             status: DEFAULT_STATUS,
-            mem: Mem::init(),
             cycles: 0,
             instructions: Instructions::init(),
             log: Log::init(),
-        }
+            bus: Rc::new(RefCell::new(unsafe { MaybeUninit::zeroed().assume_init()}))}
     }
-
-    pub fn load_to_pc(&mut self, data: &[u8]) {
-        self.log.info(format!("Loading data to mem[{:#04x}]", self.pc).as_str());
-        self.mem.load(self.pc as isize, data);
+    
+    pub fn connect_bus(&mut self, bus: Rc<RefCell<D>>) {
+        self.bus = bus;
     }
 
     pub fn reset(&mut self) {
@@ -68,7 +68,7 @@ impl Six502 {
         self.x = 0;
         self.y = 0;
         //    memory to zero
-        self.mem.clear();
+        self.bus.borrow_mut().clear();
         self.cycles = 0;
     }
 
@@ -158,7 +158,7 @@ impl Six502 {
     }
 
     pub fn instruction(&mut self) -> bool {
-        let opcode = self.mem[self.pc];
+        let opcode = self.bus.borrow().read(self.pc);
         self.log.info(format!("Read instruction '{:?}' from mem[{:#02x}]", OpCode::from(opcode), self.pc).as_str());
 
         self.pc += 1;
@@ -170,7 +170,7 @@ impl Six502 {
 
     /// Returns byte at pc and increases pc
     pub(crate) fn fetch_byte(&mut self) -> Byte {
-        let b = self.mem[self.pc];
+        let b = self.bus.borrow().read(self.pc);
         self.log.info(format!("Fetched byte {b:#02x} from mem[{:#02x}]", self.pc).as_str());
         self.pc +=1;
         self.clock();
@@ -179,7 +179,7 @@ impl Six502 {
     //reads one byte at specified addr.
     pub(crate) fn read_byte(&mut self, addr: Word) -> Byte {
  
-        let b = self.mem[addr];
+        let b = self.bus.borrow().read(addr);
         self.log.info(format!("Read byte {b:#02x} from mem[{addr:#02x}]").as_str());
         self.clock();
         return b;
@@ -187,10 +187,10 @@ impl Six502 {
 
     //reads two bytes at PC, increases PC (2x)
     pub(crate) fn fetch_word(&mut self) -> Word {
-        let mut word: Word = self.mem[self.pc] as Word;
+        let mut word: Word = self.bus.borrow().read(self.pc) as Word;
         self.pc+=1;
         self.clock();
-        word |= (self.mem[self.pc] as Word) << 8;
+        word |= (self.bus.borrow().read(self.pc) as Word) << 8;
         self.pc+=1;
         self.clock();
         word
@@ -204,14 +204,14 @@ impl Six502 {
 
     /// Returns byte at pc and increases pc
     pub(crate) fn fetch_signed_byte(&mut self) -> SByte {
-        let b = self.mem[self.pc];
+        let b = self.bus.borrow().read(self.pc);
         self.log.info(format!("Fetched byte {b:#02x} from mem[{:#02x}]", self.pc).as_str());
         self.pc +=1;
         self.clock();
         return b as i8;
     }
     pub(crate) fn write_byte(&mut self, addr: Word, b: Byte) {
-        self.mem[addr] = b;
+        self.bus.borrow_mut().write(addr, b);
         self.clock();
     }
 
@@ -262,7 +262,7 @@ impl Six502 {
 
     pub(crate) fn push_stack(&mut self, data: Byte) {
         let addr = ST_ADDR + self.sp as Word;
-        self.mem[addr] = data;
+        self.bus.borrow_mut().write(addr, data);
         self.log.info(format!("Pushing {data:#02x} to stack at {:#02x}", self.sp).as_str());
         self.sp -= 1;
         self.clock();
@@ -271,7 +271,7 @@ impl Six502 {
     pub(crate) fn pop_stack(&mut self) -> Byte {
         self.sp += 1;
         let addr = ST_ADDR + self.sp as Word;
-        let data = self.mem[addr];
+        let data = self.bus.borrow().read(addr);
         self.clock();
         self.log.info(format!("Popping {data:#02x} from stack at {:#02x}", self.sp).as_str());
         data
@@ -280,25 +280,18 @@ impl Six502 {
     #[cfg(test)]
     pub(crate) fn read_stack(&self) -> Byte {
         let addr = ST_ADDR + (self.sp + 0x1) as Word;
-        self.mem[addr]
+        self.bus.borrow().read(addr)
     }
 
 
     #[cfg(test)]
     pub(crate) fn byte_at(&self, at: Word) -> Byte {
-        self.mem[at]
-    }
-
-    #[cfg(test)]
-    pub(crate) fn mem_section(&self, start: usize, len: usize) {
-        let mut mem = vec![0u8; len];
-        self.mem.get_mem_section(start, &mut mem);
-        println!("mem at: {start}, {mem:?}");
+        self.bus.borrow().read(at)
     }
 
     #[cfg(test)]
     pub (crate) fn set_byte_at(&mut self, addr: Word, b: Byte) {
-        self.mem[addr] = b;
+        self.bus.borrow_mut().write(addr, b);
     }
     #[cfg(test)]
     pub(crate) fn set_reg_byte(&mut self, reg: Register, v: Byte) {
@@ -349,7 +342,7 @@ impl Six502 {
         }
     }
 }
-impl std::fmt::Debug for Six502 {
+impl<D: DataBus> std::fmt::Debug for Six502<D> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             f.write_str(">>\n")?;
            f.write_fmt(format_args!("   pc: {}\n", self.pc))?;
@@ -371,13 +364,14 @@ impl std::fmt::Debug for Six502 {
 
 #[cfg(test)]
 mod test {
-    use crate::cpu::SP_INIT;
+    use crate::{cpu::SP_INIT, mem::Mem};
 
     use super::Six502;
 
     #[test]
     fn cpu_stack() {
-        let mut cpu = Six502::new();
+        let mem = Mem::init();
+        let mut cpu = Six502::<Mem>::new();
         assert_eq!(cpu.sp, SP_INIT);
         cpu.push_stack(0x01);
         assert_eq!(cpu.read_stack(), 0x01);
